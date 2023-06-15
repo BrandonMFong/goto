@@ -1,7 +1,6 @@
 #!/bin/bash
 
 GOTO_UTILS_DATA_DIR=~/.gotoutils
-GOTO_UTILS_DATA_DB=~/.gotoutils/keypaths
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
 function goto() {
@@ -18,7 +17,7 @@ function goto-add() {
 }
 
 function goto-remove() {
-	echo "TODO: remove a path";
+	$GOTO_UTILS_TOOL rm $1;
 }
 
 function goto-showkeys() {

@@ -13,11 +13,13 @@ use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{self, prelude::*};
 use std::fs::canonicalize;
+use std::io::SeekFrom;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
 static ARG_ADD: &'static str = "add";
 static ARG_REMOVE: &'static str = "rm";
+static ARG_HELP: &'static str = "help";
 
 static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
 
@@ -30,25 +32,29 @@ fn help() {
     println!("\t\t{ARG_GETKEYS}: {tool_name} {ARG_GETKEYS} <path>");
     println!("\t\t{ARG_ADD}: {tool_name} {ARG_ADD} <key> <path>");
     println!("\t\t{ARG_REMOVE}: {tool_name} {ARG_REMOVE} <key>");
+    println!("\t\t{ARG_HELP}: {tool_name} {ARG_HELP}");
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("Not enough arguments");
-        help();
         process::exit(1);
     }
 
     let mut error = 0;
-    if args[1].eq(ARG_GETPATH) {
+    if args[1].eq(ARG_HELP) {
+        help();
+    } else if args[1].eq(ARG_GETPATH) {
         error = print_path_for_key(&args[2]);
     } else if args[1].eq(ARG_GETKEYS) {
         error = print_keys_for_path(&args[2]);
     } else if args[1].eq(ARG_ADD) {
-       error = add_key_path(&args[2], &args[3]);
+        error = add_key_path(&args[2], &args[3]);
     } else if args[1].eq(ARG_REMOVE) {
-
+        error = remove_key_path(&args[2]);
+    } else {
+        eprintln!("unknown argument: {}", &args[1]);
     }
 
     process::exit(error);
@@ -108,6 +114,47 @@ fn print_keys_for_path(path: &String) -> i32 {
     return 0;
 }
 
+fn remove_key_path(key: &String) -> i32 {
+    // Open the file in read-write mode
+    let mut file = OpenOptions::new().read(true).write(true).open(goto_key_paths_file_path()).unwrap();
+
+    // Create a buffer to store the modified contents
+    let mut buffer = Vec::new();
+
+    // Seek to the beginning of the file
+    if let Err(error) = file.seek(SeekFrom::Start(0)) {
+        eprintln!("Error occured: {}", error);
+        return -1;
+    }
+
+    // Iterate over the lines and exclude the line to be removed
+    for line in io::BufReader::new(&file).lines() {
+        // Write non-matching lines to the buffer
+        if let Ok(ref ip) = line {
+            let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+            if key_path_pair[0] != key {
+                buffer.extend(line.unwrap().bytes());
+                buffer.push(b'\n');
+            }
+        }
+    }
+
+    // Truncate the file to the current position (i.e., remove the remaining contents)
+    let seek_current = file.seek(SeekFrom::Start(0)).unwrap();
+    if let Err(error) = file.set_len(seek_current) {
+        eprintln!("Error occured: {}", error);
+        return -1;
+    }
+
+    // Write the modified contents back to the file
+    if let Err(error) = file.write_all(&buffer) {
+        eprintln!("Error occured: {}", error);
+        return -1;
+    }
+
+    return 0;
+}
+
 fn add_key_path(key: &String, path: &String) -> i32 {
     // See if key already exists
     if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
@@ -130,19 +177,15 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
 
     // write
-    match writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
-        Ok(_) => { } Err(error) => {
-            eprintln!("Error occurred writing line: {}", error);
-            return -1;
-        }
+    if let Err(error) = writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
+        eprintln!("Error occurred writing line: {}", error);
+        return -1;
     }
 
     // Make sure the writer flushed all data
-    match file_writer.flush() {
-        Ok(_) => { } Err(error) => {
-            eprintln!("Could not flush file: {}", error);
-            return -1;
-        }
+    if let Err(error) = file_writer.flush() {
+        eprintln!("Could not flush file: {}", error);
+        return -1;
     }
 
     return 0;
