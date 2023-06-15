@@ -90,6 +90,8 @@ fn print_path_for_key(key: &String) -> i32 {
         }
     }
 
+    eprintln!("Could not find path for key: {key}");
+
     return -1;
 }
 

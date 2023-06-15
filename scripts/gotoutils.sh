@@ -5,9 +5,8 @@ GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
 function goto() {
 	path=$($GOTO_UTILS_TOOL getpath $1);
-	if [ $? -ne 0 ]; then 
-		goto-print-error "Error occurred: $?";
-	else
+	error=$?;
+	if [ $error -eq 0 ]; then 
 		cd $path;
 	fi
 }
