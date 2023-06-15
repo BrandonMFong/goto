@@ -11,6 +11,7 @@ function goto() {
 	fi
 }
 
+# https://keyholesoftware.com/2022/07/18/adding-autocompletion-to-bash-scripts/
 function __goto_completion() {
 	COMPREPLY=( $(./bin/release/gototool getallkeys) )
 }
