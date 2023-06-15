@@ -1,0 +1,6 @@
+# rust
+Cargo.lock
+target
+
+# build
+bin
