@@ -4,10 +4,10 @@ GOTO_UTILS_DATA_DIR=~/.gotoutils
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
 function goto() {
-	path=$($GOTO_UTILS_TOOL getpath $1);
+	p=$($GOTO_UTILS_TOOL getpath $1);
 	error=$?;
 	if [ $error -eq 0 ]; then 
-		cd $path;
+		cd $p;
 	fi
 }
 
