@@ -15,7 +15,7 @@ use std::io::{self, prelude::*};
 use std::fs::canonicalize;
 
 static ARG_GETPATH: &'static str = "getpath";
-static ARG_GETKEY: &'static str = "getkey";
+static ARG_GETKEYS: &'static str = "getkeys";
 static ARG_ADD: &'static str = "add";
 static ARG_REMOVE: &'static str = "rm";
 
@@ -27,7 +27,7 @@ fn help() {
     println!("usage: {tool_name} <arg>");
     println!("\targuments:");
     println!("\t\t{ARG_GETPATH}: {tool_name} {ARG_GETPATH} <key>");
-    println!("\t\t{ARG_GETKEY}: {tool_name} {ARG_GETKEY} <path>");
+    println!("\t\t{ARG_GETKEYS}: {tool_name} {ARG_GETKEYS} <path>");
     println!("\t\t{ARG_ADD}: {tool_name} {ARG_ADD} <key> <path>");
     println!("\t\t{ARG_REMOVE}: {tool_name} {ARG_REMOVE} <key>");
 }
@@ -43,8 +43,8 @@ fn main() {
     let mut error = 0;
     if args[1].eq(ARG_GETPATH) {
         error = print_path_for_key(&args[2]);
-    } else if args[1].eq(ARG_GETKEY) {
-
+    } else if args[1].eq(ARG_GETKEYS) {
+        error = print_keys_for_path(&args[2]);
     } else if args[1].eq(ARG_ADD) {
        error = add_key_path(&args[2], &args[3]);
     } else if args[1].eq(ARG_REMOVE) {
@@ -85,6 +85,27 @@ fn print_path_for_key(key: &String) -> i32 {
     }
 
     return -1;
+}
+
+fn print_keys_for_path(path: &String) -> i32 {
+    // Expand the input path
+    let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+    if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
+        for line in lines {
+            if let Ok(ip) = line {
+                // key|path
+                let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                if key_path_pair.len() != 2 {
+                    eprintln!("error in key path pair");
+                    return -1;
+                } else if key_path_pair[1] == expanded_path {
+                    println!("{} => {}", key_path_pair[0], key_path_pair[1]);
+                }
+            }
+        }
+    }
+
+    return 0;
 }
 
 fn add_key_path(key: &String, path: &String) -> i32 {

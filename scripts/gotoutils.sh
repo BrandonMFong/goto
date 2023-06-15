@@ -5,7 +5,12 @@ GOTO_UTILS_DATA_DB=~/.gotoutils/keypaths
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
 function goto() {
-	$GOTO_UTILS_TOOL getpath $1;
+	path=$($GOTO_UTILS_TOOL getpath $1);
+	if [ $? -ne 0 ]; then 
+		goto-print-error "Error occurred: $?";
+	else
+		cd $path;
+	fi
 }
 
 function goto-add() {
@@ -14,6 +19,10 @@ function goto-add() {
 
 function goto-remove() {
 	echo "TODO: remove a path";
+}
+
+function goto-showkeys() {
+	$GOTO_UTILS_TOOL getkeys $1;
 }
 
 function goto-print-error() {
