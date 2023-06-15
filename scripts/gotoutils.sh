@@ -5,7 +5,7 @@ GOTO_UTILS_DATA_DB=~/.gotoutils/keypaths
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
 function goto() {
-	$GOTO_UTILS_TOOL;
+	$GOTO_UTILS_TOOL getpath $1;
 }
 
 function goto-add() {

@@ -42,7 +42,7 @@ fn main() {
 
     let mut error = 0;
     if args[1].eq(ARG_GETPATH) {
-        
+        error = print_path_for_key(&args[2]);
     } else if args[1].eq(ARG_GETKEY) {
 
     } else if args[1].eq(ARG_ADD) {
@@ -66,12 +66,33 @@ fn goto_key_paths_file_path() -> PathBuf {
     return res
 }
 
+fn print_path_for_key(key: &String) -> i32 {
+    // See if key already exists
+    if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
+        for line in lines {
+            if let Ok(ip) = line {
+                // key|path
+                let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                if key_path_pair.len() != 2 {
+                    eprintln!("error in key path pair");
+                    return -1;
+                } else if key_path_pair[0] == key {
+                    println!("{}", key_path_pair[1]);
+                    return 0;
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
 fn add_key_path(key: &String, path: &String) -> i32 {
     // See if key already exists
     if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
         for line in lines {
             if let Ok(ip) = line {
-                println!("{}", ip);
+                // key|path
                 let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
                 if key_path_pair[0] == key {
                     eprintln!("key ({key}) already exists");
@@ -83,18 +104,21 @@ fn add_key_path(key: &String, path: &String) -> i32 {
 
     // Write new key and path pair
     let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(goto_key_paths_file_path()).unwrap();
+
+    // Expand the input path
     let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+
+    // write
     match writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
-        Ok(_) => {
-        } Err(error) => {
+        Ok(_) => { } Err(error) => {
             eprintln!("Error occurred writing line: {}", error);
             return -1;
         }
     }
 
+    // Make sure the writer flushed all data
     match file_writer.flush() {
-        Ok(_) => {
-        } Err(error) => {
+        Ok(_) => { } Err(error) => {
             eprintln!("Could not flush file: {}", error);
             return -1;
         }
