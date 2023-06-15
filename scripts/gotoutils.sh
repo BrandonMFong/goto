@@ -11,6 +11,11 @@ function goto() {
 	fi
 }
 
+function __goto_completion() {
+	COMPREPLY=( $(./bin/release/gototool getallkeys) )
+}
+complete -F __goto_completion goto
+
 function goto-add() {
 	$GOTO_UTILS_TOOL add $1 $2;
 }
