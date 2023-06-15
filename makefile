@@ -24,7 +24,8 @@ debug: setup
 	cp -afv $(GOTO_SCRIPT_PATH) $(BIN_DIR_DEBUG)
 
 clean:
-	@rm -rfv $(BIN_DIR)
+	rm -rfv $(BIN_DIR)
+	cargo clean --verbose --color always
 
 setup:
 	@mkdir -p $(BIN_DIR)

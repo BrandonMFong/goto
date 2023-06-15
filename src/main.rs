@@ -12,6 +12,7 @@ use std::io::BufRead;
 use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::{self, prelude::*};
+use std::fs::canonicalize;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEY: &'static str = "getkey";
@@ -33,7 +34,7 @@ fn help() {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {
+    if args.len() < 2 {
         eprintln!("Not enough arguments");
         help();
         process::exit(1);
@@ -66,7 +67,7 @@ fn goto_key_paths_file_path() -> PathBuf {
 }
 
 fn add_key_path(key: &String, path: &String) -> i32 {
-    println!("adding new key and path");
+    // See if key already exists
     if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
         for line in lines {
             if let Ok(ip) = line {
@@ -75,25 +76,27 @@ fn add_key_path(key: &String, path: &String) -> i32 {
                 if key_path_pair[0] == key {
                     eprintln!("key ({key}) already exists");
                     return -1;
-                } else {
-                    let mut file_writer = OpenOptions::new().write(true).append(true).open(goto_key_paths_file_path()).unwrap();
-                    match writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{path}") {
-                        Ok(_) => {
-                        } Err(error) => {
-                            eprintln!("Error occurred writing line: {}", error);
-                            return -1;
-                        }
-                    }
-                    match file_writer.flush() {
-                        Ok(_) => {
-
-                        } Err(error) => {
-                            eprintln!("Could not flush file: {}", error);
-                            return -1;
-                        }
-                    }
                 }
             }
+        }
+    }
+
+    // Write new key and path pair
+    let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(goto_key_paths_file_path()).unwrap();
+    let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+    match writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
+        Ok(_) => {
+        } Err(error) => {
+            eprintln!("Error occurred writing line: {}", error);
+            return -1;
+        }
+    }
+
+    match file_writer.flush() {
+        Ok(_) => {
+        } Err(error) => {
+            eprintln!("Could not flush file: {}", error);
+            return -1;
         }
     }
 

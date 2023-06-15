@@ -9,8 +9,7 @@ function goto() {
 }
 
 function goto-add() {
-	echo "TODO: add a path";
-	$GOTO_UTILS_TOOL;
+	$GOTO_UTILS_TOOL add $1 $2;
 }
 
 function goto-remove() {
