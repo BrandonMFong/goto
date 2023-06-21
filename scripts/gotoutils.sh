@@ -13,7 +13,8 @@ function goto() {
 
 # https://keyholesoftware.com/2022/07/18/adding-autocompletion-to-bash-scripts/
 function __goto_completion() {
-	COMPREPLY=( $(./bin/release/gototool getallkeys) )
+	cur=${COMP_WORDS[COMP_CWORD]}
+	COMPREPLY=( $(./bin/release/gototool getsugkeys $cur) )
 }
 complete -F __goto_completion goto
 
