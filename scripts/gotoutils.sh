@@ -32,7 +32,7 @@ function goto-showkeys() {
 	$GOTO_UTILS_TOOL getkeys $1;
 }
 
-function goto-print-error() {
+function __goto-print-error() {
 	echo "$@" 1>&2;
 }
 
