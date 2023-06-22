@@ -17,6 +17,7 @@ use std::io::SeekFrom;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
+static ARG_GETSUGKEYS: &'static str = "getsugkeys";
 static ARG_ADD: &'static str = "add";
 static ARG_REMOVE: &'static str = "rm";
 static ARG_HELP: &'static str = "help";
@@ -30,6 +31,7 @@ fn help() {
     println!("\targuments:");
     println!("\t\t{ARG_GETPATH}: {tool_name} {ARG_GETPATH} <key>");
     println!("\t\t{ARG_GETKEYS}: {tool_name} {ARG_GETKEYS} <path>");
+    println!("\t\t{ARG_GETSUGKEYS}: {tool_name} {ARG_GETSUGKEYS}");
     println!("\t\t{ARG_ADD}: {tool_name} {ARG_ADD} <key> <path>");
     println!("\t\t{ARG_REMOVE}: {tool_name} {ARG_REMOVE} <key>");
     println!("\t\t{ARG_HELP}: {tool_name} {ARG_HELP}");
@@ -49,6 +51,12 @@ fn main() {
         error = print_path_for_key(&args[2]);
     } else if args[1].eq(ARG_GETKEYS) {
         error = print_keys_for_path(&args[2]);
+    } else if args[1].eq(ARG_GETSUGKEYS) {
+        let mut input_key = String::new(); // make empty string
+        if args.len() > 2 { // if there is an argument, let's find some suggestions
+            input_key.push_str(&args[2]);
+        }
+        error = print_suggested_keys(&input_key);
     } else if args[1].eq(ARG_ADD) {
         error = add_key_path(&args[2], &args[3]);
     } else if args[1].eq(ARG_REMOVE) {
@@ -108,6 +116,29 @@ fn print_keys_for_path(path: &String) -> i32 {
                     return -1;
                 } else if key_path_pair[1] == expanded_path {
                     println!("{} => {}", key_path_pair[0], key_path_pair[1]);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * prints similar keys to input
+ */
+fn print_suggested_keys(input: &String) -> i32 {
+    // Expand the input path
+    if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
+        for line in lines {
+            if let Ok(ip) = line {
+                // key|path
+                let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                if key_path_pair.len() != 2 {
+                    eprintln!("error in key path pair");
+                    return -1;
+                } else if key_path_pair[0].starts_with(input) {
+                    println!("{}", key_path_pair[0]);
                 }
             }
         }
