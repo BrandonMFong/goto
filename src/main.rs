@@ -113,6 +113,12 @@ fn print_path_for_key(key: &String) -> i32 {
 
 fn print_keys_for_path(path: &String) -> i32 {
     // TODO: check if path exists
+    
+    if !Path::new(path).exists() {
+        eprintln!("path \"{}\" is not an existing path", path);
+        return -1;
+    }
+
     // Expand the input path
     let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
     if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
