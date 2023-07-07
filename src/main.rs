@@ -48,9 +48,17 @@ fn main() {
     if args[1].eq(ARG_HELP) {
         help();
     } else if args[1].eq(ARG_GETPATH) {
-        error = print_path_for_key(&args[2]);
+        if args.len() < 3 {
+            eprintln!("Not enough arguments. Please provide key");
+        } else {
+            error = print_path_for_key(&args[2]);
+        }
     } else if args[1].eq(ARG_GETKEYS) {
-        error = print_keys_for_path(&args[2]);
+        if args.len() < 3 {
+            eprintln!("Not enough arguments. Please provide path");
+        } else {
+            error = print_keys_for_path(&args[2]);
+        }
     } else if args[1].eq(ARG_GETSUGKEYS) {
         let mut input_key = String::new(); // make empty string
         if args.len() > 2 { // if there is an argument, let's find some suggestions
@@ -104,6 +112,7 @@ fn print_path_for_key(key: &String) -> i32 {
 }
 
 fn print_keys_for_path(path: &String) -> i32 {
+    // TODO: check if path exists
     // Expand the input path
     let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
     if let Ok(lines) = read_lines(goto_key_paths_file_path()) {
