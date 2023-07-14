@@ -21,6 +21,7 @@ static ARG_GETSUGKEYS: &'static str = "getsugkeys";
 static ARG_ADD: &'static str = "add";
 static ARG_REMOVE: &'static str = "rm";
 static ARG_HELP: &'static str = "help";
+static ARG_SHOWALLKEYPAIRS: &'static str = "getallpairs";
 
 static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
 
@@ -64,6 +65,10 @@ fn main() {
             } else {
                 eprintln!("unknown argument: {}", &args[1]);
             }
+        } else if args.len() > 1 {
+            if args[1].eq(ARG_SHOWALLKEYPAIRS) {
+                error = print_all_key_pairs();
+            }
         }
     }
 
@@ -80,6 +85,31 @@ fn goto_key_paths_file_path() -> PathBuf {
     let mut res = goto_utils_path();
     res.push("keypaths");
     return res
+}
+
+fn print_all_key_pairs() -> i32 {
+    match get_file_reader_for_file(&goto_key_paths_file_path().to_string_lossy().to_string()) {
+        Err(e) => {
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path().display(), e);
+            return -1;
+        } Ok(reader) => {
+            for line in reader.lines() {
+                if let Ok(ip) = line {
+                    // key|path
+                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    if key_path_pair.len() != 2 {
+                        eprintln!("error in key path pair");
+                        return -1;
+                    } else {
+                        println!("{} => {}", key_path_pair[0], key_path_pair[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+
 }
 
 fn print_path_for_key(key: &String) -> i32 {
@@ -111,8 +141,6 @@ fn print_path_for_key(key: &String) -> i32 {
 }
 
 fn print_keys_for_path(path: &String) -> i32 {
-    // TODO: check if path exists
-    
     if !Path::new(path).exists() {
         eprintln!("path \"{}\" is not an existing path", path);
         return -1;
@@ -254,14 +282,6 @@ fn add_key_path(key: &String, path: &String) -> i32 {
 
     return 0;
 }
-
-/*
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
-}
-*/
 
 fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
     let file = File::open(path)?;

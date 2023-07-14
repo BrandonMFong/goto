@@ -36,3 +36,7 @@ function __goto-print-error() {
 	echo "$@" 1>&2;
 }
 
+function goto-showallkeypairs() {
+	$GOTO_UTILS_TOOL getallpairs;
+}
+
