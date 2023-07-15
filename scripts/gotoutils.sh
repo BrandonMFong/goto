@@ -40,3 +40,6 @@ function goto-showall() {
 	$GOTO_UTILS_TOOL getallpairs;
 }
 
+function goto-version() {
+	$GOTO_UTILS_TOOL version;
+}
