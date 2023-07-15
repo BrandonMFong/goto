@@ -22,8 +22,13 @@ static ARG_ADD: &'static str = "add";
 static ARG_REMOVE: &'static str = "rm";
 static ARG_HELP: &'static str = "help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "getallpairs";
+static ARG_GETVERSION: &'static str = "version";
 
 static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
+
+fn version() -> String {
+    return env!("CARGO_PKG_VERSION").to_owned();
+}
 
 fn help() {
     let args: Vec<String> = env::args().collect();
@@ -36,6 +41,9 @@ fn help() {
     println!("\t\t{ARG_ADD}: {tool_name} {ARG_ADD} <key> <path>");
     println!("\t\t{ARG_REMOVE}: {tool_name} {ARG_REMOVE} <key>");
     println!("\t\t{ARG_HELP}: {tool_name} {ARG_HELP}");
+
+    println!();
+    println!("version: {}, 2023", version());
 }
 
 fn main() {
@@ -68,6 +76,8 @@ fn main() {
         } else if args.len() > 1 {
             if args[1].eq(ARG_SHOWALLKEYPAIRS) {
                 error = print_all_key_pairs();
+            } else if args[1].eq(ARG_GETVERSION) {
+                println!("{}", version());
             }
         }
     }
