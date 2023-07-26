@@ -306,6 +306,28 @@ fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
+
+    fn setup() {
+        let mut path = goto_utils_path();
+        let mut result = fs::create_dir(path);
+        assert!(result.is_ok());
+
+        path = goto_key_paths_file_path();
+        let mut file = File::create(path);
+        assert!(file.is_ok());
+
+        let mut home_dir= PathBuf::from(home::home_dir().unwrap());
+        let size = file.expect("could not write to file").write(b"home|{home_dir}");
+        assert!(size.is_ok());
+        assert!(size.unwrap() > 0);
+    }
+
+    fn teardown() {
+        let path = goto_utils_path();
+        let result = fs::remove_dir_all(path);
+        assert!(result.is_ok());
+    }
 
     #[test]
     fn version_string_is_notempty() {
@@ -316,6 +338,13 @@ mod tests {
     #[test]
     fn gotoutil_dirname_is_for_tests() {
         assert_eq!(GOTO_UTILS_DIRNAME, GOTO_UTILS_DIRNAME_TEST);
+    }
+
+    #[test]
+    fn valid_file_reader() {
+        setup();
+
+        teardown();
     }
 }
 
