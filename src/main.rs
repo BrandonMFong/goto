@@ -98,7 +98,7 @@ fn print_all_key_pairs() -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -124,7 +124,7 @@ fn print_path_for_key(key: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -159,7 +159,7 @@ fn print_keys_for_path(path: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -187,7 +187,7 @@ fn print_suggested_keys(input: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -219,7 +219,7 @@ fn remove_key_path(key: &String) -> i32 {
     for line in io::BufReader::new(&file).lines() {
         // Write non-matching lines to the buffer
         if let Ok(ref ip) = line {
-            let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+            let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
             if key_path_pair[0] != key {
                 buffer.extend(line.unwrap().bytes());
                 buffer.push(b'\n');
@@ -254,7 +254,7 @@ fn add_key_path(key: &String, path: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair[0] == key {
                         eprintln!("key ({key}) already exists");
                         return -1;
@@ -303,12 +303,19 @@ fn goto_key_paths_file_path() -> String {
     return res;
 }
 
+/**
+ * Takes in a line from keypaths file and splits it out by the GOTO_KEY_PATH_DELIMITER
+ */
 fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
     if entry.is_empty() {
         return Vec::new() 
     } else {
         return entry.split(GOTO_KEY_PATH_DELIMITER).collect();
     }
+}
+
+fn expand_path(path: &str) -> String {
+    return canonicalize(path).unwrap().into_os_string().into_string().unwrap();
 }
 
 #[cfg(test)]
@@ -389,6 +396,21 @@ mod tests {
         // We should not have any splits
         vec = split_key_path_line_entry("");
         assert!(vec.len() == 0);
+    }
+
+    fn path_exists(path: &str) -> bool {
+        if let Ok(_) = fs::metadata(path) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    #[test]
+    fn expanding_paths() {
+        let path = expand_path(".");
+        assert!(!path.is_empty());
+        assert!(path_exists(&path));
     }
 }
 
