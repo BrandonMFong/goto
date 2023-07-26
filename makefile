@@ -39,3 +39,6 @@ install:
 uninstall:
 	rm -rfv $(GOTO_UTILS_DATA_DIR)
 
+test:
+	cargo test
+
