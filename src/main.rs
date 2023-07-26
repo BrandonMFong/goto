@@ -26,6 +26,10 @@ static ARG_GETVERSION: &'static str = "version";
 
 static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
 
+static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
+static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
+static GOTO_UTILS_DIRNAME: &'static str = if cfg!(test) { GOTO_UTILS_DIRNAME_TEST } else { GOTO_UTILS_DIRNAME_RELEASE };
+
 fn version() -> String {
     return env!("CARGO_PKG_VERSION").to_owned();
 }
@@ -87,7 +91,7 @@ fn main() {
 
 fn goto_utils_path() -> PathBuf {
     let mut res = PathBuf::from(home::home_dir().unwrap());
-    res.push(".gotoutils");
+    res.push(GOTO_UTILS_DIRNAME);
     return res;
 }
 
@@ -307,6 +311,11 @@ mod tests {
     fn version_string_is_notempty() {
         let result = version();
         assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn gotoutil_dirname_is_for_tests() {
+        assert_eq!(GOTO_UTILS_DIRNAME, GOTO_UTILS_DIRNAME_TEST);
     }
 }
 
