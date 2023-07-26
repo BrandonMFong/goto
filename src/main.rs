@@ -299,3 +299,14 @@ fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
     Ok(reader)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn version_string_is_notempty() {
+        let result = version();
+        assert!(!result.is_empty());
+    }
+}
+
