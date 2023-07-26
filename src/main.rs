@@ -149,7 +149,7 @@ fn print_keys_for_path(path: &String) -> i32 {
     }
 
     // Expand the input path
-    let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+    let expanded_path = expand_path(&path);
 
     match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
@@ -268,7 +268,7 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(&goto_key_paths_file_path()).unwrap();
 
     // Expand the input path
-    let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+    let expanded_path = expand_path(&path);
 
     // write
     if let Err(error) = writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
@@ -314,6 +314,9 @@ fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
     }
 }
 
+/**
+ * expands relative path
+ */
 fn expand_path(path: &str) -> String {
     return canonicalize(path).unwrap().into_os_string().into_string().unwrap();
 }
