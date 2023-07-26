@@ -89,18 +89,6 @@ fn main() {
     process::exit(error);
 }
 
-fn goto_utils_path() -> String {
-    let mut res = PathBuf::from(home::home_dir().unwrap());
-    res.push(GOTO_UTILS_DIRNAME);
-    return res.to_string_lossy().to_string();
-}
-
-fn goto_key_paths_file_path() -> String {
-    let mut res = goto_utils_path();
-    res += "/keypaths";
-    return res;
-}
-
 fn print_all_key_pairs() -> i32 {
     match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
@@ -303,6 +291,26 @@ fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
     Ok(reader)
 }
 
+fn goto_utils_path() -> String {
+    let mut res = PathBuf::from(home::home_dir().unwrap());
+    res.push(GOTO_UTILS_DIRNAME);
+    return res.to_string_lossy().to_string();
+}
+
+fn goto_key_paths_file_path() -> String {
+    let mut res = goto_utils_path();
+    res += "/keypaths";
+    return res;
+}
+
+fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
+    if entry.is_empty() {
+        return Vec::new() 
+    } else {
+        return entry.split(GOTO_KEY_PATH_DELIMITER).collect();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -365,6 +373,22 @@ mod tests {
         assert!(reader.is_ok());
         assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
         teardown();
+    }
+
+    #[test]
+    fn key_path_line_entry_split() {
+        let mut vec = split_key_path_line_entry("hello|world");
+        assert!(vec.len() == 2);
+        assert!(vec[0] == "hello", "{} != 'hello'", vec[0]);
+        assert!(vec[1] == "world", "{} != 'world'", vec[1]);
+
+        vec = split_key_path_line_entry("hello");
+        assert!(vec.len() == 1);
+        assert!(vec[0] == "hello", "{} != 'hello'", vec[0]);
+
+        // We should not have any splits
+        vec = split_key_path_line_entry("");
+        assert!(vec.len() == 0);
     }
 }
 
