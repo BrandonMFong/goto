@@ -338,7 +338,7 @@ mod tests {
     }
 
     #[test]
-    fn version_string_is_notempty() {
+    fn version_string_is_not_empty() {
         let result = version();
         assert!(!result.is_empty());
     }
@@ -349,10 +349,21 @@ mod tests {
     }
 
     #[test]
+    fn goto_util_dirpath_not_empty() {
+        assert!(!goto_utils_path().is_empty());
+    }
+
+    #[test]
+    fn goto_util_keypath_file_path_not_empty() {
+        assert!(!goto_key_paths_file_path().is_empty());
+    }
+
+    #[test]
     fn valid_file_reader() {
         setup();
         let reader = get_file_reader_for_file(&goto_key_paths_file_path());
         assert!(reader.is_ok());
+        assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
         teardown();
     }
 }
