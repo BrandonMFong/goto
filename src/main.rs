@@ -26,6 +26,10 @@ static ARG_GETVERSION: &'static str = "version";
 
 static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
 
+static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
+static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
+static GOTO_UTILS_DIRNAME: &'static str = if cfg!(test) { GOTO_UTILS_DIRNAME_TEST } else { GOTO_UTILS_DIRNAME_RELEASE };
+
 fn version() -> String {
     return env!("CARGO_PKG_VERSION").to_owned();
 }
@@ -85,28 +89,16 @@ fn main() {
     process::exit(error);
 }
 
-fn goto_utils_path() -> PathBuf {
-    let mut res = PathBuf::from(home::home_dir().unwrap());
-    res.push(".gotoutils");
-    return res;
-}
-
-fn goto_key_paths_file_path() -> PathBuf {
-    let mut res = goto_utils_path();
-    res.push("keypaths");
-    return res
-}
-
 fn print_all_key_pairs() -> i32 {
-    match get_file_reader_for_file(&goto_key_paths_file_path().to_string_lossy().to_string()) {
+    match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path().display(), e);
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
             return -1;
         } Ok(reader) => {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -124,15 +116,15 @@ fn print_all_key_pairs() -> i32 {
 
 fn print_path_for_key(key: &String) -> i32 {
     // See if key already exists
-    match get_file_reader_for_file(&goto_key_paths_file_path().to_string_lossy().to_string()) {
+    match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path().display(), e);
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
             return -1;
         } Ok(reader) => {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -157,17 +149,17 @@ fn print_keys_for_path(path: &String) -> i32 {
     }
 
     // Expand the input path
-    let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+    let expanded_path = expand_path(&path);
 
-    match get_file_reader_for_file(&goto_key_paths_file_path().to_string_lossy().to_string()) {
+    match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path().display(), e);
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
             return -1;
         } Ok(reader) => {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -187,15 +179,15 @@ fn print_keys_for_path(path: &String) -> i32 {
  */
 fn print_suggested_keys(input: &String) -> i32 {
     // Expand the input path
-    match get_file_reader_for_file(&goto_key_paths_file_path().to_string_lossy().to_string()) {
+    match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path().display(), e);
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
             return -1;
         } Ok(reader) => {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair.len() != 2 {
                         eprintln!("error in key path pair");
                         return -1;
@@ -212,7 +204,7 @@ fn print_suggested_keys(input: &String) -> i32 {
 
 fn remove_key_path(key: &String) -> i32 {
     // Open the file in read-write mode
-    let mut file = OpenOptions::new().read(true).write(true).open(&goto_key_paths_file_path().to_string_lossy().to_string()).unwrap();
+    let mut file = OpenOptions::new().read(true).write(true).open(&goto_key_paths_file_path()).unwrap();
 
     // Create a buffer to store the modified contents
     let mut buffer = Vec::new();
@@ -227,7 +219,7 @@ fn remove_key_path(key: &String) -> i32 {
     for line in io::BufReader::new(&file).lines() {
         // Write non-matching lines to the buffer
         if let Ok(ref ip) = line {
-            let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+            let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
             if key_path_pair[0] != key {
                 buffer.extend(line.unwrap().bytes());
                 buffer.push(b'\n');
@@ -254,15 +246,15 @@ fn remove_key_path(key: &String) -> i32 {
 fn add_key_path(key: &String, path: &String) -> i32 {
     // See if key already exists
     
-    match get_file_reader_for_file(&goto_key_paths_file_path().to_string_lossy().to_string()) {
+    match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path().display(), e);
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
             return -1;
         } Ok(reader) => {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair: Vec<&str> = ip.split(GOTO_KEY_PATH_DELIMITER).collect();
+                    let key_path_pair: Vec<&str> = split_key_path_line_entry(&ip);
                     if key_path_pair[0] == key {
                         eprintln!("key ({key}) already exists");
                         return -1;
@@ -273,10 +265,10 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     }
 
     // Write new key and path pair
-    let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(&goto_key_paths_file_path().to_string_lossy().to_string()).unwrap();
+    let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(&goto_key_paths_file_path()).unwrap();
 
     // Expand the input path
-    let expanded_path = canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+    let expanded_path = expand_path(&path);
 
     // write
     if let Err(error) = writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
@@ -297,5 +289,131 @@ fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     Ok(reader)
+}
+
+fn goto_utils_path() -> String {
+    let mut res = PathBuf::from(home::home_dir().unwrap());
+    res.push(GOTO_UTILS_DIRNAME);
+    return res.to_string_lossy().to_string();
+}
+
+fn goto_key_paths_file_path() -> String {
+    let mut res = goto_utils_path();
+    res += "/keypaths";
+    return res;
+}
+
+/**
+ * Takes in a line from keypaths file and splits it out by the GOTO_KEY_PATH_DELIMITER
+ */
+fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
+    if entry.is_empty() {
+        return Vec::new() 
+    } else {
+        return entry.split(GOTO_KEY_PATH_DELIMITER).collect();
+    }
+}
+
+/**
+ * expands relative path
+ */
+fn expand_path(path: &str) -> String {
+    return canonicalize(path).unwrap().into_os_string().into_string().unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    fn setup() {
+        // create the test env
+        let mut path = goto_utils_path();
+        let mut result = fs::create_dir(&path);
+        assert!(result.is_ok());
+       
+        // make sure it is created
+        let meta = fs::metadata(&path);
+        assert!(meta.is_ok());
+        assert!(meta.unwrap().is_dir());
+
+        // we will be writing test data
+        path = goto_key_paths_file_path();
+        let file = File::create(path);
+        assert!(file.is_ok());
+
+        // write test data
+        let home_dir = PathBuf::from(home::home_dir().unwrap());
+        let line = "home|".to_owned() + &home_dir.to_string_lossy().to_string();
+        result = file.expect("could not write to file").write_all(line.as_bytes());
+        assert!(result.is_ok());
+    }
+
+    fn teardown() {
+        let path = goto_utils_path();
+        let result = fs::remove_dir_all(path);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn version_string_is_not_empty() {
+        let result = version();
+        assert!(!result.is_empty());
+    }
+
+    #[test]
+    fn gotoutil_dirname_is_for_tests() {
+        assert_eq!(GOTO_UTILS_DIRNAME, GOTO_UTILS_DIRNAME_TEST);
+    }
+
+    #[test]
+    fn goto_util_dirpath_not_empty() {
+        assert!(!goto_utils_path().is_empty());
+    }
+
+    #[test]
+    fn goto_util_keypath_file_path_not_empty() {
+        assert!(!goto_key_paths_file_path().is_empty());
+    }
+
+    #[test]
+    fn valid_file_reader() {
+        setup();
+        let reader = get_file_reader_for_file(&goto_key_paths_file_path());
+        assert!(reader.is_ok());
+        assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
+        teardown();
+    }
+
+    #[test]
+    fn key_path_line_entry_split() {
+        let mut vec = split_key_path_line_entry("hello|world");
+        assert!(vec.len() == 2);
+        assert!(vec[0] == "hello", "{} != 'hello'", vec[0]);
+        assert!(vec[1] == "world", "{} != 'world'", vec[1]);
+
+        vec = split_key_path_line_entry("hello");
+        assert!(vec.len() == 1);
+        assert!(vec[0] == "hello", "{} != 'hello'", vec[0]);
+
+        // We should not have any splits
+        vec = split_key_path_line_entry("");
+        assert!(vec.len() == 0);
+    }
+
+    fn path_exists(path: &str) -> bool {
+        if let Ok(_) = fs::metadata(path) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    #[test]
+    fn expanding_paths() {
+        let path = expand_path(".");
+        assert!(!path.is_empty());
+        assert!(path_exists(&path));
+    }
 }
 
