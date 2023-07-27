@@ -16,6 +16,9 @@ pub struct Entries {
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
+        if !self._reader.is_none() {
+            
+        }
         Some(KeyPath::new("", ""))
     }
 }
