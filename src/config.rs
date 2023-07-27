@@ -13,8 +13,11 @@ pub struct Entries {
     _reader: Option<BufReader<File>>
 }
 
-impl Entries {
-    
+impl Iterator for Entries {
+    type Item = KeyPath;
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(KeyPath::new("", ""))
+    }
 }
 
 pub struct Config {
