@@ -100,7 +100,7 @@ fn print_all_key_pairs() -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair = KeyPath::new(&ip);
+                    let key_path_pair = KeyPath::from_entry(&ip);
                     if !key_path_pair.is_valid() {
                         eprintln!("error in key path pair");
                         return -1;
@@ -126,7 +126,7 @@ fn print_path_for_key(key: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair = KeyPath::new(&ip);
+                    let key_path_pair = KeyPath::from_entry(&ip);
                     if !key_path_pair.is_valid() {
                         eprintln!("error in key path pair");
                         return -1;
@@ -161,7 +161,7 @@ fn print_keys_for_path(path: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair = KeyPath::new(&ip);
+                    let key_path_pair = KeyPath::from_entry(&ip);
                     if !key_path_pair.is_valid() {
                         eprintln!("error in key path pair");
                         return -1;
@@ -189,7 +189,7 @@ fn print_suggested_keys(input: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair = KeyPath::new(&ip);
+                    let key_path_pair = KeyPath::from_entry(&ip);
                     if !key_path_pair.is_valid() {
                         eprintln!("error in key path pair");
                         return -1;
@@ -221,7 +221,7 @@ fn remove_key_path(key: &String) -> i32 {
     for line in io::BufReader::new(&file).lines() {
         // Write non-matching lines to the buffer
         if let Ok(ref ip) = line {
-            let key_path_pair = KeyPath::new(&ip);
+            let key_path_pair = KeyPath::from_entry(&ip);
             if key_path_pair.is_valid() && key_path_pair.key() != key {
                 buffer.extend(line.unwrap().bytes());
                 buffer.push(b'\n');
@@ -256,7 +256,7 @@ fn add_key_path(key: &String, path: &String) -> i32 {
             for line in reader.lines() {
                 if let Ok(ip) = line {
                     // key|path
-                    let key_path_pair = KeyPath::new(&ip);
+                    let key_path_pair = KeyPath::from_entry(&ip);
                     if !key_path_pair.is_valid() && key_path_pair.key() == key {
                         eprintln!("key ({key}) already exists");
                         return -1;

@@ -23,7 +23,7 @@ fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
 }
 
 impl KeyPath {
-    pub fn new(entry: &str) -> Self {
+    pub fn from_entry(entry: &str) -> Self {
         let mut result = KeyPath {
             _key: String::new(),
             _path: String::new(),
@@ -37,6 +37,22 @@ impl KeyPath {
                 result._path = vec[1].to_string();
                 result._valid = true;
             }
+        }
+
+        return result;
+    }
+
+    pub fn new(key: &str, path: &str) -> Self {
+        let mut result = KeyPath {
+            _key: String::new(),
+            _path: String::new(),
+            _valid: false
+        };
+
+        if !key.is_empty() && !path.is_empty() {
+            result._key = key.to_string();
+            result._path = path.to_string();
+            result._valid = true;
         }
 
         return result;
@@ -79,18 +95,36 @@ mod tests {
     }
 
     #[test]
-    fn key_path_constructor() {
-        let mut kp = KeyPath::new("hello|world");
+    fn key_path_constructor_from_entry() {
+        let mut kp = KeyPath::from_entry("hello|world");
         assert!(kp.is_valid());
         assert!(kp.key() == "hello", "{} != 'hello'", kp.key());
         assert!(kp.path() == "world", "{} != 'world'", kp.path());
 
-        kp = KeyPath::new("hello world");
+        kp = KeyPath::from_entry("hello world");
         assert!(!kp.is_valid());
         assert!(kp.key().is_empty());
         assert!(kp.path().is_empty());
 
-        kp = KeyPath::new("hello|world|amazing");
+        kp = KeyPath::from_entry("hello|world|amazing");
+        assert!(!kp.is_valid());
+        assert!(kp.key().is_empty());
+        assert!(kp.path().is_empty());
+    }
+
+    #[test]
+    fn key_path_constructor_manual() {
+        let mut kp = KeyPath::new("key", "path");
+        assert!(kp.is_valid());
+        assert!(kp.key() == "key", "{} != 'key'", kp.key());
+        assert!(kp.path() == "path", "{} != 'path'", kp.path());
+
+        kp = KeyPath::new("key", "");
+        assert!(!kp.is_valid());
+        assert!(kp.key().is_empty());
+        assert!(kp.path().is_empty());
+
+        kp = KeyPath::new("", "path");
         assert!(!kp.is_valid());
         assert!(kp.key().is_empty());
         assert!(kp.path().is_empty());
