@@ -24,10 +24,14 @@ fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
 
 impl KeyPath {
     pub fn new(entry: &str) -> Self {
-        let mut result = KeyPath {_key: String::new(), _path: String::new(), _valid: false};
+        let mut result = KeyPath {
+            _key: String::new(),
+            _path: String::new(),
+            _valid: false
+        };
+
         if !entry.is_empty() {
             let vec: Vec<&str> = split_key_path_line_entry(entry);
-            
             if vec.len() == 2 {
                 result._key = vec[0].to_string();
                 result._path = vec[1].to_string();
@@ -52,7 +56,6 @@ impl KeyPath {
     pub fn path(&self) -> &str {
         &self._path
     }
-
 }
 
 #[cfg(test)]
@@ -73,6 +76,24 @@ mod tests {
         // We should not have any splits
         vec = split_key_path_line_entry("");
         assert!(vec.len() == 0);
+    }
+
+    #[test]
+    fn key_path_constructor() {
+        let mut kp = KeyPath::new("hello|world");
+        assert!(kp.is_valid());
+        assert!(kp.key() == "hello", "{} != 'hello'", kp.key());
+        assert!(kp.path() == "world", "{} != 'world'", kp.path());
+
+        kp = KeyPath::new("hello world");
+        assert!(!kp.is_valid());
+        assert!(kp.key().is_empty());
+        assert!(kp.path().is_empty());
+
+        kp = KeyPath::new("hello|world|amazing");
+        assert!(!kp.is_valid());
+        assert!(kp.key().is_empty());
+        assert!(kp.path().is_empty());
     }
 }
 
