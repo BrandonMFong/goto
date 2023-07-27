@@ -5,9 +5,10 @@
 
 pub static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
 
-struct KeyPath {
-    key: String,
-    path: String
+pub struct KeyPath {
+    _key: String,
+    _path: String,
+    _valid: bool
 }
 
 /**
@@ -23,24 +24,40 @@ fn split_key_path_line_entry(entry: &str) -> Vec<&str> {
 
 impl KeyPath {
     pub fn new(entry: &str) -> Self {
-        let mut result = KeyPath {key: String::new(), path: String::new()};
+        let mut result = KeyPath {_key: String::new(), _path: String::new(), _valid: false};
         if !entry.is_empty() {
             let vec: Vec<&str> = split_key_path_line_entry(entry);
             
             if vec.len() == 2 {
-                result.key = vec[0].to_string();
-                result.path = vec[1].to_string();
+                result._key = vec[0].to_string();
+                result._path = vec[1].to_string();
+                result._valid = true;
             }
         }
 
         return result;
     }
+
+    /**
+     * true if key and path are both set
+     */
+    pub fn is_valid(&self) -> bool {
+        self._valid
+    }
+
+    pub fn key(&self) -> &str {
+        &self._key
+    }
+
+    pub fn path(&self) -> &str {
+        &self._path
+    }
+
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
 
     #[test]
     fn key_path_line_entry_split() {
