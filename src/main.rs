@@ -246,7 +246,6 @@ fn remove_key_path(key: &String) -> i32 {
 
 fn add_key_path(key: &String, path: &String) -> i32 {
     // See if key already exists
-    
     match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
