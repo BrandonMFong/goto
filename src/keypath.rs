@@ -58,6 +58,10 @@ impl KeyPath {
         return result;
     }
 
+    pub fn entry(&self) -> String {
+        return format!("{}{}{}", self._key, GOTO_KEY_PATH_DELIMITER, self._path);
+    }
+
     /**
      * true if key and path are both set
      */
@@ -128,6 +132,15 @@ mod tests {
         assert!(!kp.is_valid());
         assert!(kp.key().is_empty());
         assert!(kp.path().is_empty());
+    }
+
+    #[test]
+    fn create_entry() {
+        let mut kp = KeyPath::new("key", "path");
+        assert!(kp.is_valid());
+        assert!(kp.key() == "key", "{} != 'key'", kp.key());
+        assert!(kp.path() == "path", "{} != 'path'", kp.path());
+        assert!(kp.entry() == "key|path");
     }
 }
 
