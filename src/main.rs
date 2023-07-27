@@ -3,6 +3,8 @@
  * date: 6/14/23
  */
 
+mod keypath;
+
 use std::env;
 use std::process;
 use home;
@@ -14,6 +16,7 @@ use std::fs::OpenOptions;
 use std::io::{prelude::*};
 use std::fs::canonicalize;
 use std::io::SeekFrom;
+use crate::keypath::GOTO_KEY_PATH_DELIMITER;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
@@ -23,8 +26,6 @@ static ARG_REMOVE: &'static str = "rm";
 static ARG_HELP: &'static str = "help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "getallpairs";
 static ARG_GETVERSION: &'static str = "version";
-
-static GOTO_KEY_PATH_DELIMITER: &'static str = "|";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
@@ -383,22 +384,6 @@ mod tests {
         assert!(reader.is_ok());
         assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
         teardown();
-    }
-
-    #[test]
-    fn key_path_line_entry_split() {
-        let mut vec = split_key_path_line_entry("hello|world");
-        assert!(vec.len() == 2);
-        assert!(vec[0] == "hello", "{} != 'hello'", vec[0]);
-        assert!(vec[1] == "world", "{} != 'world'", vec[1]);
-
-        vec = split_key_path_line_entry("hello");
-        assert!(vec.len() == 1);
-        assert!(vec[0] == "hello", "{} != 'hello'", vec[0]);
-
-        // We should not have any splits
-        vec = split_key_path_line_entry("");
-        assert!(vec.len() == 0);
     }
 
     fn path_exists(path: &str) -> bool {
