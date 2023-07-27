@@ -18,6 +18,7 @@ use std::io::{prelude::*};
 use std::fs::canonicalize;
 use std::io::SeekFrom;
 use crate::keypath::KeyPath;
+use crate::config::Config;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
@@ -92,6 +93,14 @@ fn main() {
 }
 
 fn print_all_key_pairs() -> i32 {
+    match Config::open_for_read(&goto_key_paths_file_path()) {
+        Err(e) => {
+
+        } Ok(conf) => {
+
+        }
+    }
+
     match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
