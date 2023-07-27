@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn create_entry() {
-        let mut kp = KeyPath::new("key", "path");
+        let kp = KeyPath::new("key", "path");
         assert!(kp.is_valid());
         assert!(kp.key() == "key", "{} != 'key'", kp.key());
         assert!(kp.path() == "path", "{} != 'path'", kp.path());

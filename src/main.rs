@@ -16,7 +16,6 @@ use std::fs::OpenOptions;
 use std::io::{prelude::*};
 use std::fs::canonicalize;
 use std::io::SeekFrom;
-use crate::keypath::GOTO_KEY_PATH_DELIMITER;
 use crate::keypath::KeyPath;
 
 static ARG_GETPATH: &'static str = "getpath";
@@ -272,8 +271,15 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     // Expand the input path
     let expanded_path = expand_path(&path);
 
+    let kp = KeyPath::new(&key, &expanded_path);
+
+    if !kp.is_valid() {
+        eprintln!("invalid key path pair");
+        return -1;
+    }
+
     // write
-    if let Err(error) = writeln!(file_writer, "{key}{GOTO_KEY_PATH_DELIMITER}{expanded_path}") {
+    if let Err(error) = writeln!(file_writer, "{}", kp.entry()) {
         eprintln!("Error occurred writing line: {}", error);
         return -1;
     }
