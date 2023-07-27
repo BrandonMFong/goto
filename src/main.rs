@@ -4,6 +4,7 @@
  */
 
 mod keypath;
+mod config;
 
 use std::env;
 use std::process;
