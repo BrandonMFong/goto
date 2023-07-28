@@ -13,11 +13,13 @@ pub struct Entries {
     _reader: Option<BufReader<File>>
 }
 
+// https://doc.rust-lang.org/rust-by-example/trait/iter.html
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
         if !self._reader.is_none() {
-            
+            let rdr = &self._reader;
+            let line = rdr.lines();
         }
         Some(KeyPath::new("", ""))
     }
