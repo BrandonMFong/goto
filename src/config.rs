@@ -10,17 +10,14 @@ use crate::keypath::KeyPath;
 use std::io::Lines;
 
 pub struct Entries {
-    _reader: Option<BufReader<File>>
+    _reader: BufReader<File>
 }
 
 // https://doc.rust-lang.org/rust-by-example/trait/iter.html
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
-        if !self._reader.is_none() {
-            let rdr = &self._reader;
-            let line = rdr.lines();
-        }
+        let rdr = &self._reader;
         Some(KeyPath::new("", ""))
     }
 }
@@ -32,25 +29,19 @@ pub struct Config {
 
 impl Config {
     pub fn open_for_read(path: &str) -> Result<Self, &str> {
-        let mut result = Self {
-            _path: path.to_string(), 
-            _entries: Entries{ _reader: None }
-        };
-        
-        match File::options().read(true).open(&result._path) {
+        match File::options().read(true).open(path) {
             Err(e) => {
                 eprintln!("Error: {}", e);
                 return Err("Could not open for read");
             } Ok(f) => {
-                result._entries._reader = Some(BufReader::new(f));
+                let result = Self {
+                    _path: path.to_string(), 
+                    _entries: Entries{ _reader: BufReader::new(f) }
+                };
+ 
+                Ok(result)
             }
         }
-
-        if result._entries._reader.is_none() {
-            return Err("Reader could not be used");
-        }
-
-        Ok(result)
     }
 
     pub fn entries(&self) -> Result<&Entries, &str> {
