@@ -10,15 +10,20 @@ use crate::keypath::KeyPath;
 use std::io::Lines;
 
 pub struct Entries {
-    _reader: BufReader<File>
+    _lines: Lines<BufReader<File>>
 }
 
 // https://doc.rust-lang.org/rust-by-example/trait/iter.html
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
-        let rdr = &self._reader;
-        Some(KeyPath::new("", ""))
+        match &self._lines.next() {
+            Err(_) => {
+                return None;
+            } Ok(ip) => {
+                return Some(KeyPath::from_entry(&ip));
+            }
+        }
     }
 }
 
@@ -36,7 +41,7 @@ impl Config {
             } Ok(f) => {
                 let result = Self {
                     _path: path.to_string(), 
-                    _entries: Entries{ _reader: BufReader::new(f) }
+                    _entries: Entries{ _lines: BufReader::new(f).lines() }
                 };
  
                 Ok(result)
