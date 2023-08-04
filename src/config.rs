@@ -17,12 +17,10 @@ pub struct Entries {
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
-        match &self._lines.next() {
-            Err(_) => {
-                return None;
-            } Ok(ip) => {
-                return Some(KeyPath::from_entry(&ip));
-            }
+        let line = self._lines.next();
+        match line {
+            Some(entry) => return Some(KeyPath::from_entry(&entry.unwrap())),
+            None => return None,
         }
     }
 }
