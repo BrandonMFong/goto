@@ -47,8 +47,8 @@ impl Config {
         }
     }
 
-    pub fn entries(&self) -> Result<&Entries, &str> {
-        Ok(&self._entries)
+    pub fn entries(&self) -> Result<Entries, &str> {
+        Ok(self._entries)
     }
 }
 

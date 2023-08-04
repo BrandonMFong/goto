@@ -97,7 +97,14 @@ fn print_all_key_pairs() -> i32 {
         Err(e) => {
 
         } Ok(conf) => {
-
+            for key_path_pair in conf.entries().into_iter() {
+                if !key_path_pair.is_valid() {
+                    eprintln!("error in key path pair");
+                    return -1;
+                } else {
+                    println!("{} => {}", key_path_pair.key(), key_path_pair.path());
+                }
+            }
         }
     }
 
