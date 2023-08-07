@@ -93,7 +93,6 @@ fn main() {
 }
 
 fn print_all_key_pairs() -> i32 {
-    println!("print_all_key_pairs");
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("{}", e);
@@ -109,32 +108,12 @@ fn print_all_key_pairs() -> i32 {
             }
         }
     }
-/*
-    match get_file_reader_for_file(&goto_key_paths_file_path()) {
-        Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return -1;
-        } Ok(reader) => {
-            for line in reader.lines() {
-                if let Ok(ip) = line {
-                    // key|path
-                    let key_path_pair = KeyPath::from_entry(&ip);
-                    if !key_path_pair.is_valid() {
-                        eprintln!("error in key path pair");
-                        return -1;
-                    } else {
-                        println!("{} => {}", key_path_pair.key(), key_path_pair.path());
-                    }
-                }
-            }
-        }
-    }
-*/
-    return 0;
 
+    return 0;
 }
 
 fn print_path_for_key(key: &String) -> i32 {
+/*
     // See if key already exists
     match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
@@ -156,6 +135,25 @@ fn print_path_for_key(key: &String) -> i32 {
             }
         }
     }
+*/
+    match Config::new(&goto_key_paths_file_path()) {
+        Err(e) => {
+            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
+            return -1;
+        } Ok(conf) => {
+            for key_path_pair in conf.entries() {
+                if !key_path_pair.is_valid() {
+                    eprintln!("error in key path pair");
+                    return -1;
+                } else if key_path_pair.key() == key {
+                    println!("{}", key_path_pair.path());
+                    return 0;
+                }
+            }
+        }
+    }
+
+
 
     eprintln!("Could not find path for key: {key}");
 
