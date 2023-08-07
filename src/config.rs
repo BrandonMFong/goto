@@ -74,5 +74,12 @@ mod tests {
         assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
         teardown();
     }
+
+    #[test]
+    fn config_constructor() {
+        setup();
+        let conf = Config::new(&goto_key_paths_file_path());
+        teardown();
+    }
 }
 
