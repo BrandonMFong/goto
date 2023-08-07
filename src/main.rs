@@ -93,11 +93,11 @@ fn main() {
 }
 
 fn print_all_key_pairs() -> i32 {
-    match Config::open_for_read(&goto_key_paths_file_path()) {
+    match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
 
         } Ok(conf) => {
-            for key_path_pair in conf.entries().into_iter() {
+            for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
                     return -1;

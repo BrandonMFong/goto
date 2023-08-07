@@ -10,15 +10,15 @@ use crate::keypath::KeyPath;
 use std::io::Lines;
 
 pub struct Entries {
-    _lines: Lines<BufReader<File>>
+    _lines: Option<Lines<BufReader<File>>>
 }
 
 // https://doc.rust-lang.org/rust-by-example/trait/iter.html
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
-        let line = self._lines.next();
-        match line {
+        let lines = &self._lines;
+        match lines.unwrap().next() {
             Some(entry) => return Some(KeyPath::from_entry(&entry.unwrap())),
             None => return None,
         }
@@ -27,31 +27,27 @@ impl Iterator for Entries {
 
 pub struct Config {
     _path: String,
-    _entries: Entries
 }
 
 impl Config {
-    pub fn open_for_read(path: &str) -> Result<Self, &str> {
-        match File::options().read(true).open(path) {
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                return Err("Could not open for read");
-            } Ok(f) => {
-                let result = Self {
-                    _path: path.to_string(), 
-                    _entries: Entries{ _lines: BufReader::new(f).lines() }
-                };
- 
-                Ok(result)
-            }
+    pub fn new(path: &str) -> Result<Self, &str> {
+        if path.is_empty() {
+            return Err("empty path to config");
+        } else {
+            return Ok(Self{ _path: path.to_string()});
         }
     }
 
-    pub fn entries(&self) -> Result<Entries, &str> {
-        Ok(self._entries)
+    pub fn entries(&self) -> Entries {
+        match File::options().read(true).open(&self._path) {
+            Err(e) => {
+                return Entries{ _lines: None };
+            } Ok(f) => {
+                return Entries{ _lines: Some(BufReader::new(f).lines()) };
+            }
+        }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
