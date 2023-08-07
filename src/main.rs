@@ -64,6 +64,7 @@ fn main() {
     if args[1].eq(ARG_HELP) {
         help();
     } else {
+        // TODO: passing 'add' wont show a good error log
         if args.len() > 3 {
             if args[1].eq(ARG_ADD) {
                 error = add_key_path(&args[2], &args[3]);
