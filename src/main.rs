@@ -93,9 +93,11 @@ fn main() {
 }
 
 fn print_all_key_pairs() -> i32 {
+    println!("print_all_key_pairs");
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
-
+            eprintln!("{}", e);
+            return -1;
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
@@ -107,7 +109,7 @@ fn print_all_key_pairs() -> i32 {
             }
         }
     }
-
+/*
     match get_file_reader_for_file(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
@@ -127,7 +129,7 @@ fn print_all_key_pairs() -> i32 {
             }
         }
     }
-
+*/
     return 0;
 
 }

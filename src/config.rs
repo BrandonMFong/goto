@@ -17,10 +17,14 @@ pub struct Entries {
 impl Iterator for Entries {
     type Item = KeyPath;
     fn next(&mut self) -> Option<Self::Item> {
-        let lines = &self._lines;
-        match lines.unwrap().next() {
-            Some(entry) => return Some(KeyPath::from_entry(&entry.unwrap())),
-            None => return None,
+        if self._lines.is_none() {
+            None
+        } else {
+            let lines = &mut self._lines;
+            match lines.as_mut().unwrap().next() {
+                Some(entry) => return Some(KeyPath::from_entry(&entry.unwrap())),
+                None => return None,
+            }
         }
     }
 }
@@ -40,7 +44,7 @@ impl Config {
 
     pub fn entries(&self) -> Entries {
         match File::options().read(true).open(&self._path) {
-            Err(e) => {
+            Err(_) => {
                 return Entries{ _lines: None };
             } Ok(f) => {
                 return Entries{ _lines: Some(BufReader::new(f).lines()) };
