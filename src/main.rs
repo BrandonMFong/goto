@@ -10,15 +10,16 @@ use std::env;
 use std::process;
 use home;
 use std::path::PathBuf;
-use std::fs::File;
-use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 use std::fs::OpenOptions;
-use std::io::{prelude::*};
 use std::fs::canonicalize;
 use std::io::SeekFrom;
 use crate::keypath::KeyPath;
 use crate::config::Config;
+use std::io::Write;
+use std::io::Seek;
+use std::io;
+use std::io::BufRead;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
@@ -272,11 +273,6 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     return 0;
 }
 
-fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    Ok(reader)
-}
 
 fn goto_utils_path() -> String {
     let mut res = PathBuf::from(home::home_dir().unwrap());
@@ -301,8 +297,9 @@ fn expand_path(path: &str) -> String {
 mod tests {
     use super::*;
     use std::fs;
+    use std::fs::File;
 
-    fn setup() {
+    pub fn setup() {
         // create the test env
         let mut path = goto_utils_path();
         let mut result = fs::create_dir(&path);
@@ -325,7 +322,7 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    fn teardown() {
+    pub fn teardown() {
         let path = goto_utils_path();
         let result = fs::remove_dir_all(path);
         assert!(result.is_ok());
@@ -350,15 +347,6 @@ mod tests {
     #[test]
     fn goto_util_keypath_file_path_not_empty() {
         assert!(!goto_key_paths_file_path().is_empty());
-    }
-
-    #[test]
-    fn valid_file_reader() {
-        setup();
-        let reader = get_file_reader_for_file(&goto_key_paths_file_path());
-        assert!(reader.is_ok());
-        assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
-        teardown();
     }
 
     fn path_exists(path: &str) -> bool {
