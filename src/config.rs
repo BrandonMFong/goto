@@ -50,16 +50,19 @@ impl Config {
      */
     pub fn enter_keypath(&self, kp: KeyPath) -> Result<(), &str> {
         // Write new key and path pair
-        let mut file_writer = Self::create_writer(&self._path).unwrap();
+        let file_writer = Config::create_writer(&self._path);
+        if file_writer.is_err() {
+            return Err(file_writer.err().unwrap());
+        }
 
         // write
-        if let Err(error) = writeln!(file_writer, "{}", kp.entry()) {
+        if let Err(error) = writeln!(file_writer.as_ref().unwrap(), "{}", kp.entry()) {
             eprintln!("Error occurred writing line: {} ({})", kp.entry(), error);
             return Err("could not write entry");
         }
 
         // Make sure the writer flushed all data
-        if let Err(error) = file_writer.flush() {
+        if let Err(error) = file_writer.as_ref().unwrap().flush() {
             eprintln!("{}", error);
             return Err("error flushing");
         }
@@ -155,7 +158,7 @@ impl Iterator for Entries {
 mod tests {
     use super::*;
     use crate::tests::{setup, teardown};
-    use crate::goto_key_paths_file_path;
+    use crate::{goto_key_paths_file_path, goto_utils_path};
 
     #[test]
     fn valid_file_reader() {
@@ -199,6 +202,21 @@ mod tests {
         }
 
         assert!(i > 0);
+        teardown();
+    }
+
+    #[test]
+    fn create_writer() {
+        setup();
+        let path = goto_key_paths_file_path();
+        let writer = Config::create_writer(&path);
+        assert!(writer.is_ok());
+
+        let mut path = goto_utils_path();
+        println!("{}", path);
+        path += "/test";
+        let writer = Config::create_writer(&path);
+        assert!(writer.is_ok());
         teardown();
     }
 }

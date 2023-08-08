@@ -270,7 +270,12 @@ mod tests {
     pub fn setup() {
         // create the test env
         let mut path = goto_utils_path();
-       
+
+        if path_exists(&path) {
+            let result = fs::remove_dir_all(&path);
+            assert!(result.is_ok());
+        }
+
         let result = fs::create_dir(&path);
         assert!(result.is_ok(), "couldn't create {}", path);
        
