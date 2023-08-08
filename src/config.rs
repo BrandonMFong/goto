@@ -71,6 +71,9 @@ impl Config {
         return Ok(());
     }
 
+    /**
+     * removes entry that has 'key'
+     */
     pub fn remove_keypath(&self, key: &str) -> Result<(), &str> {
         // Open the file in read-write mode
         let file = Config::create_writer(&self._path);
