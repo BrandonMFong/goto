@@ -19,6 +19,9 @@ pub struct Config {
 }
 
 impl Config {
+    /**
+     * Creates a new config object
+     */
     pub fn new(path: &str) -> Result<Self, &str> {
         if path.is_empty() {
             return Err("empty path to config");
@@ -27,6 +30,9 @@ impl Config {
         }
     }
 
+    /**
+     * returns an iterator that provides each key path entry in config
+     */
     pub fn entries(&self) -> Entries {
         match get_file_reader_for_file(&self._path) {
             Err(_) => {
