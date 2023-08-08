@@ -230,44 +230,33 @@ fn remove_key_path(key: &String) -> i32 {
 }
 
 fn add_key_path(key: &String, path: &String) -> i32 {
-    // See if key already exists
-    match Config::new(&goto_key_paths_file_path()) {
-        Err(e) => {
-            eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return -1;
-        } Ok(conf) => {
-            for key_path_pair in conf.entries() {
-                if key_path_pair.is_valid() && key_path_pair.key() == key {
-                    eprintln!("key ({key}) already exists");
-                    return -1;
-                }
+    let key_paths_file_path = goto_key_paths_file_path();
+    let config = Config::new(&key_paths_file_path);
+    if let Err(e) = config {
+        eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
+        return -1;
+    } else {
+        let conf = config.as_ref().unwrap();
+        for key_path_pair in conf.entries() {
+            if key_path_pair.is_valid() && key_path_pair.key() == key {
+                eprintln!("key ({key}) already exists");
+                return -1;
             }
         }
     }
-
-    // Write new key and path pair
-    let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(&goto_key_paths_file_path()).unwrap();
-
+    
     // Expand the input path
     let expanded_path = expand_path(&path);
-
     let kp = KeyPath::new(&key, &expanded_path);
-
     if !kp.is_valid() {
         eprintln!("invalid key path pair");
         return -1;
     }
-
-    // write
-    if let Err(error) = writeln!(file_writer, "{}", kp.entry()) {
-        eprintln!("Error occurred writing line: {}", error);
-        return -1;
-    }
-
-    // Make sure the writer flushed all data
-    if let Err(error) = file_writer.flush() {
-        eprintln!("Could not flush file: {}", error);
-        return -1;
+   
+    match config.unwrap().enter_keypath(kp) {
+        Err(e) => {
+            eprintln!("experienced an error entry new key path: {}", e);
+        } Ok(_) => {}
     }
 
     return 0;

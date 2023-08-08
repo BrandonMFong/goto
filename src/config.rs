@@ -9,6 +9,51 @@ use std::io::BufRead;
 use crate::keypath::KeyPath;
 use std::io::Lines;
 use std::io;
+use std::fs::OpenOptions;
+use std::io::Write;
+
+pub struct Config {
+    _path: String,
+}
+
+impl Config {
+    pub fn new(path: &str) -> Result<Self, &str> {
+        if path.is_empty() {
+            return Err("empty path to config");
+        } else {
+            return Ok(Self{ _path: path.to_string().clone()});
+        }
+    }
+
+    pub fn entries(&self) -> Entries {
+        match get_file_reader_for_file(&self._path) {
+            Err(_) => {
+                return Entries{ _lines: None };
+            } Ok(f) => {
+                return Entries{ _lines: Some(f.lines()) };
+            }
+        }
+    }
+
+    pub fn enter_keypath(&self, kp: KeyPath) -> Result<(), &str> {
+        // Write new key and path pair
+        let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(&self._path).unwrap();
+
+        // write
+        if let Err(error) = writeln!(file_writer, "{}", kp.entry()) {
+            eprintln!("Error occurred writing line: {} ({})", kp.entry(), error);
+            return Err("could not write entry");
+        }
+
+        // Make sure the writer flushed all data
+        if let Err(error) = file_writer.flush() {
+            eprintln!("{}", error);
+            return Err("error flushing");
+        }
+
+        return Ok(());
+    }
+}
 
 pub struct Entries {
     _lines: Option<Lines<BufReader<File>>>
@@ -25,30 +70,6 @@ impl Iterator for Entries {
             match lines.as_mut().unwrap().next() {
                 Some(entry) => return Some(KeyPath::from_entry(&entry.unwrap())),
                 None => return None,
-            }
-        }
-    }
-}
-
-pub struct Config {
-    _path: String,
-}
-
-impl Config {
-    pub fn new(path: &str) -> Result<Self, &str> {
-        if path.is_empty() {
-            return Err("empty path to config");
-        } else {
-            return Ok(Self{ _path: path.to_string()});
-        }
-    }
-
-    pub fn entries(&self) -> Entries {
-        match get_file_reader_for_file(&self._path) {
-            Err(_) => {
-                return Entries{ _lines: None };
-            } Ok(f) => {
-                return Entries{ _lines: Some(f.lines()) };
             }
         }
     }
