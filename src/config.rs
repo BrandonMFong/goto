@@ -34,7 +34,7 @@ impl Config {
      * returns an iterator that provides each key path entry in config
      */
     pub fn entries(&self) -> Entries {
-        match get_file_reader_for_file(&self._path) {
+        match Self::create_reader(&self._path) {
             Err(_) => {
                 return Entries{ _lines: None };
             } Ok(f) => {
@@ -43,9 +43,14 @@ impl Config {
         }
     }
 
+    /**
+     * Writes keypath entry into config
+     *
+     * does not check if kp already exists
+     */
     pub fn enter_keypath(&self, kp: KeyPath) -> Result<(), &str> {
         // Write new key and path pair
-        let mut file_writer = OpenOptions::new().create(true).write(true).append(true).open(&self._path).unwrap();
+        let mut file_writer = Self::create_writer(&self._path).unwrap();
 
         // write
         if let Err(error) = writeln!(file_writer, "{}", kp.entry()) {
@@ -64,19 +69,22 @@ impl Config {
 
     pub fn remove_keypath(&self, key: &str) -> Result<(), &str> {
         // Open the file in read-write mode
-        let mut file = OpenOptions::new().read(true).write(true).open(&self._path).unwrap();
+        let file = Config::create_writer(&self._path);
+        if file.is_err() {
+            return Err(file.err().unwrap());
+        }
 
         // Create a buffer to store the modified contents
         let mut buffer = Vec::new();
 
         // Seek to the beginning of the file
-        if let Err(error) = file.seek(SeekFrom::Start(0)) {
+        if let Err(error) = file.as_ref().unwrap().seek(SeekFrom::Start(0)) {
             eprintln!("Error occured: {}", error);
             return Err("couldn't seek to start of file");
         }
 
         // Iterate over the lines and exclude the line to be removed
-        for line in io::BufReader::new(&file).lines() {
+        for line in io::BufReader::new(file.as_ref().unwrap()).lines() {
             // Write non-matching lines to the buffer
             if let Ok(ref ip) = line {
                 let key_path_pair = KeyPath::from_entry(&ip);
@@ -88,19 +96,37 @@ impl Config {
         }
 
         // Truncate the file to the current position (i.e., remove the remaining contents)
-        let seek_current = file.seek(SeekFrom::Start(0)).unwrap();
-        if let Err(error) = file.set_len(seek_current) {
+        let seek_current = file.as_ref().unwrap().seek(SeekFrom::Start(0)).unwrap();
+        if let Err(error) = file.as_ref().unwrap().set_len(seek_current) {
             eprintln!("Error occured: {}", error);
             return Err("couldn't erase file");
         }
 
         // Write the modified contents back to the file
-        if let Err(error) = file.write_all(&buffer) {
+        if let Err(error) = file.as_ref().unwrap().write_all(&buffer) {
             eprintln!("Error occured: {}", error);
             return Err("couldn't dump to file");
         }
 
         return Ok(());
+    }
+
+    /**
+     * creates a writer for path
+     */
+    fn create_writer(path: &str) -> Result<File, &str> {
+        match OpenOptions::new().create(true).write(true).append(true).open(&path) {
+            Err(_) => {
+                Err("couldn't open for writing")
+            } Ok(res) => {
+                Ok(res)
+            }
+        }
+    }
+    fn create_reader(path: &str) -> Result<BufReader<File>, io::Error> {
+        let file = File::open(path)?;
+        let reader = BufReader::new(file);
+        Ok(reader)
     }
 }
 
@@ -124,11 +150,6 @@ impl Iterator for Entries {
     }
 }
 
-fn get_file_reader_for_file(path: &str) -> Result<BufReader<File>, io::Error> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    Ok(reader)
-}
 
 #[cfg(test)]
 mod tests {
@@ -139,7 +160,7 @@ mod tests {
     #[test]
     fn valid_file_reader() {
         setup();
-        let reader = get_file_reader_for_file(&goto_key_paths_file_path());
+        let reader = Config::create_reader(&goto_key_paths_file_path());
         assert!(reader.is_ok());
         assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
         teardown();
