@@ -299,6 +299,9 @@ mod tests {
     use std::fs;
     use std::fs::File;
 
+    /**
+     * Creates a keypaths with one entry
+     */
     pub fn setup() {
         // create the test env
         let mut path = goto_utils_path();

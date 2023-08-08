@@ -83,5 +83,32 @@ mod tests {
         assert!(conf.is_ok());
         teardown();
     }
+
+    #[test]
+    fn entries_with_no_lines() {
+        let entries = Entries { _lines: None };
+        assert!(entries._lines.is_none());
+    }
+
+    #[test]
+    fn config_constructor_with_empty_path() {
+        let conf = Config::new("");
+        assert!(conf.is_err());
+    }
+
+    #[test]
+    fn loop_through_test_entries() {
+        setup();
+        let path = goto_key_paths_file_path();
+        let conf = Config::new(&path);
+        assert!(conf.is_ok());
+        let mut i = 0;
+        for _ in conf.unwrap().entries() {
+            i += 1;
+        }
+
+        assert!(i > 0);
+        teardown();
+    }
 }
 
