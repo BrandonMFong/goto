@@ -302,8 +302,11 @@ mod tests {
     pub fn setup() {
         // create the test env
         let mut path = goto_utils_path();
-        let mut result = fs::create_dir(&path);
-        assert!(result.is_ok());
+       
+        if !path_exists(&path) {
+            let result = fs::create_dir(&path);
+            assert!(result.is_ok(), "couldn't create {}", path);
+        }
        
         // make sure it is created
         let meta = fs::metadata(&path);
@@ -318,7 +321,7 @@ mod tests {
         // write test data
         let home_dir = PathBuf::from(home::home_dir().unwrap());
         let line = "home|".to_owned() + &home_dir.to_string_lossy().to_string();
-        result = file.expect("could not write to file").write_all(line.as_bytes());
+        let result = file.expect("could not write to file").write_all(line.as_bytes());
         assert!(result.is_ok());
     }
 

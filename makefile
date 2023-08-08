@@ -40,6 +40,5 @@ uninstall:
 	rm -rfv $(GOTO_UTILS_DATA_DIR)
 
 test:
-	export RUST_BACKTRACE=1
-	cargo test
+	cargo test -- --test-threads=1 
 
