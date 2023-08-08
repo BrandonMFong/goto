@@ -11,6 +11,8 @@ use std::io::Lines;
 use std::io;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::io::SeekFrom;
+use std::io::Seek;
 
 pub struct Config {
     _path: String,
@@ -49,6 +51,47 @@ impl Config {
         if let Err(error) = file_writer.flush() {
             eprintln!("{}", error);
             return Err("error flushing");
+        }
+
+        return Ok(());
+    }
+
+    pub fn remove_keypath(&self, key: &str) -> Result<(), &str> {
+        // Open the file in read-write mode
+        let mut file = OpenOptions::new().read(true).write(true).open(&self._path).unwrap();
+
+        // Create a buffer to store the modified contents
+        let mut buffer = Vec::new();
+
+        // Seek to the beginning of the file
+        if let Err(error) = file.seek(SeekFrom::Start(0)) {
+            eprintln!("Error occured: {}", error);
+            return Err("couldn't seek to start of file");
+        }
+
+        // Iterate over the lines and exclude the line to be removed
+        for line in io::BufReader::new(&file).lines() {
+            // Write non-matching lines to the buffer
+            if let Ok(ref ip) = line {
+                let key_path_pair = KeyPath::from_entry(&ip);
+                if key_path_pair.is_valid() && key_path_pair.key() != key {
+                    buffer.extend(line.unwrap().bytes());
+                    buffer.push(b'\n');
+                }
+            }
+        }
+
+        // Truncate the file to the current position (i.e., remove the remaining contents)
+        let seek_current = file.seek(SeekFrom::Start(0)).unwrap();
+        if let Err(error) = file.set_len(seek_current) {
+            eprintln!("Error occured: {}", error);
+            return Err("couldn't erase file");
+        }
+
+        // Write the modified contents back to the file
+        if let Err(error) = file.write_all(&buffer) {
+            eprintln!("Error occured: {}", error);
+            return Err("couldn't dump to file");
         }
 
         return Ok(());

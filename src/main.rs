@@ -11,15 +11,9 @@ use std::process;
 use home;
 use std::path::PathBuf;
 use std::path::Path;
-use std::fs::OpenOptions;
 use std::fs::canonicalize;
-use std::io::SeekFrom;
 use crate::keypath::KeyPath;
 use crate::config::Config;
-use std::io::Write;
-use std::io::Seek;
-use std::io;
-use std::io::BufRead;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
@@ -189,41 +183,21 @@ fn print_suggested_keys(input: &String) -> i32 {
 }
 
 fn remove_key_path(key: &String) -> i32 {
-    // Open the file in read-write mode
-    let mut file = OpenOptions::new().read(true).write(true).open(&goto_key_paths_file_path()).unwrap();
-
-    // Create a buffer to store the modified contents
-    let mut buffer = Vec::new();
-
-    // Seek to the beginning of the file
-    if let Err(error) = file.seek(SeekFrom::Start(0)) {
-        eprintln!("Error occured: {}", error);
+    let key_paths_file_path = goto_key_paths_file_path();
+    let config = Config::new(&key_paths_file_path);
+    if let Err(e) = config {
+        eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
         return -1;
     }
 
-    // Iterate over the lines and exclude the line to be removed
-    for line in io::BufReader::new(&file).lines() {
-        // Write non-matching lines to the buffer
-        if let Ok(ref ip) = line {
-            let key_path_pair = KeyPath::from_entry(&ip);
-            if key_path_pair.is_valid() && key_path_pair.key() != key {
-                buffer.extend(line.unwrap().bytes());
-                buffer.push(b'\n');
-            }
+    match config.unwrap().remove_keypath(key) {
+        Err(e) => {
+            eprintln!("could not remove key: {}", key);
+            eprintln!("{}", e);
+            return -1;
+        } Ok (_) => {
+
         }
-    }
-
-    // Truncate the file to the current position (i.e., remove the remaining contents)
-    let seek_current = file.seek(SeekFrom::Start(0)).unwrap();
-    if let Err(error) = file.set_len(seek_current) {
-        eprintln!("Error occured: {}", error);
-        return -1;
-    }
-
-    // Write the modified contents back to the file
-    if let Err(error) = file.write_all(&buffer) {
-        eprintln!("Error occured: {}", error);
-        return -1;
     }
 
     return 0;
@@ -245,14 +219,15 @@ fn add_key_path(key: &String, path: &String) -> i32 {
         }
     }
     
-    // Expand the input path
+    // create key path
     let expanded_path = expand_path(&path);
     let kp = KeyPath::new(&key, &expanded_path);
     if !kp.is_valid() {
         eprintln!("invalid key path pair");
         return -1;
     }
-   
+  
+    // write new keypath to config
     match config.unwrap().enter_keypath(kp) {
         Err(e) => {
             eprintln!("experienced an error entry new key path: {}", e);
@@ -287,6 +262,7 @@ mod tests {
     use super::*;
     use std::fs;
     use std::fs::File;
+    use std::io::Write;
 
     /**
      * Creates a keypaths with one entry
