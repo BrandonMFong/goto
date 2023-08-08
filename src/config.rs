@@ -158,7 +158,7 @@ impl Iterator for Entries {
 mod tests {
     use super::*;
     use crate::tests::{setup, teardown};
-    use crate::{goto_key_paths_file_path, goto_utils_path};
+    use crate::{goto_key_paths_file_path, goto_utils_path, path_exists};
 
     #[test]
     fn valid_file_reader() {
@@ -212,11 +212,13 @@ mod tests {
         let writer = Config::create_writer(&path);
         assert!(writer.is_ok());
 
+        // See if file is created if it doesn't exist
         let mut path = goto_utils_path();
         println!("{}", path);
         path += "/test";
         let writer = Config::create_writer(&path);
         assert!(writer.is_ok());
+        assert!(path_exists(&path));
         teardown();
     }
 }

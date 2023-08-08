@@ -14,6 +14,7 @@ use std::path::Path;
 use std::fs::canonicalize;
 use crate::keypath::KeyPath;
 use crate::config::Config;
+use std::fs;
 
 static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETKEYS: &'static str = "getkeys";
@@ -257,6 +258,14 @@ fn expand_path(path: &str) -> String {
     return canonicalize(path).unwrap().into_os_string().into_string().unwrap();
 }
 
+fn path_exists(path: &str) -> bool {
+    if let Ok(_) = fs::metadata(path) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -321,14 +330,6 @@ mod tests {
     #[test]
     fn goto_util_keypath_file_path_not_empty() {
         assert!(!goto_key_paths_file_path().is_empty());
-    }
-
-    fn path_exists(path: &str) -> bool {
-        if let Ok(_) = fs::metadata(path) {
-            return true;
-        } else {
-            return false;
-        }
     }
 
     #[test]
