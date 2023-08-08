@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 use crate::keypath::KeyPath;
+use crate::path_exists;
 use std::io::Lines;
 use std::io;
 use std::fs::OpenOptions;
@@ -126,10 +127,24 @@ impl Config {
             }
         }
     }
-    fn create_reader(path: &str) -> Result<BufReader<File>, io::Error> {
-        let file = File::open(path)?;
-        let reader = BufReader::new(file);
-        Ok(reader)
+
+    /**
+     * creates a reader object for path
+     */
+    fn create_reader(path: &str) -> Result<BufReader<File>, &str> {
+        if !path_exists(&path) {
+            Err("cannot create a reader for a file that does not exist")
+        } else {
+            match File::open(path) {
+                Err(e) => {
+                    eprintln!("file cannot be open: {}", e);
+                    Err("could not open file")
+                } Ok(file) => {
+                    let reader = BufReader::new(file);
+                    Ok(reader)
+                }
+            }
+        }
     }
 }
 
@@ -153,7 +168,6 @@ impl Iterator for Entries {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -163,7 +177,8 @@ mod tests {
     #[test]
     fn valid_file_reader() {
         setup();
-        let reader = Config::create_reader(&goto_key_paths_file_path());
+        let path = goto_key_paths_file_path();
+        let reader = Config::create_reader(&path);
         assert!(reader.is_ok());
         assert!(reader.unwrap().lines().count() == 1, "we are expecting only one line in this test case");
         teardown();
