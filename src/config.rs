@@ -78,7 +78,9 @@ mod tests {
     #[test]
     fn config_constructor() {
         setup();
-        let conf = Config::new(&goto_key_paths_file_path());
+        let path = goto_key_paths_file_path();
+        let conf = Config::new(&path);
+        assert!(conf.is_ok());
         teardown();
     }
 }

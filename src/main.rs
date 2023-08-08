@@ -303,10 +303,8 @@ mod tests {
         // create the test env
         let mut path = goto_utils_path();
        
-        if !path_exists(&path) {
-            let result = fs::create_dir(&path);
-            assert!(result.is_ok(), "couldn't create {}", path);
-        }
+        let result = fs::create_dir(&path);
+        assert!(result.is_ok(), "couldn't create {}", path);
        
         // make sure it is created
         let meta = fs::metadata(&path);
