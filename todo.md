@@ -1,4 +1,7 @@
 0.1
-[] make daemon like process
-[] ability to goto the previous directory
+[x] ability to goto the previous directory
+[x] better logging for cli
+[x] add a function that gets last path that was fetched
+[] make better packaging
+[x] make test
 

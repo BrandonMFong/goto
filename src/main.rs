@@ -5,6 +5,7 @@
 
 mod keypath;
 mod config;
+mod history;
 
 use std::env;
 use std::process;
@@ -17,6 +18,7 @@ use crate::config::Config;
 use std::fs;
 
 static ARG_GETPATH: &'static str = "getpath";
+static ARG_GETPATH_PREV: &'static str = "getpath-prev";
 static ARG_GETKEYS: &'static str = "getkeys";
 static ARG_GETSUGKEYS: &'static str = "getsugkeys";
 static ARG_ADD: &'static str = "add";
@@ -27,6 +29,8 @@ static ARG_GETVERSION: &'static str = "version";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
+static GOTO_UTILS_DIRNAME_KEYPATHS: &'static str = "keypaths";
+static GOTO_UTILS_DIRNAME_HISTORY: &'static str = "history";
 static GOTO_UTILS_DIRNAME: &'static str = if cfg!(test) { GOTO_UTILS_DIRNAME_TEST } else { GOTO_UTILS_DIRNAME_RELEASE };
 
 fn version() -> String {
@@ -37,16 +41,18 @@ fn help() {
     let args: Vec<String> = env::args().collect();
     let tool_name = &args[0];
     println!("usage: {tool_name} <arg>");
-    println!("\targuments:");
-    println!("\t\t{ARG_GETPATH}: {tool_name} {ARG_GETPATH} <key>");
-    println!("\t\t{ARG_GETKEYS}: {tool_name} {ARG_GETKEYS} <path>");
-    println!("\t\t{ARG_GETSUGKEYS}: {tool_name} {ARG_GETSUGKEYS}");
-    println!("\t\t{ARG_ADD}: {tool_name} {ARG_ADD} <key> <path>");
-    println!("\t\t{ARG_REMOVE}: {tool_name} {ARG_REMOVE} <key>");
-    println!("\t\t{ARG_HELP}: {tool_name} {ARG_HELP}");
+    println!("arguments:");
+    println!("");
+    println!("{tool_name} {ARG_GETPATH} <key> = returns path for a key");
+    println!("{tool_name} {ARG_GETPATH_PREV} = returns the previous path that was queried");
+    println!("{tool_name} {ARG_GETKEYS} <path> = returns all keys for the path");
+    println!("{tool_name} {ARG_GETSUGKEYS} = returns suggested keys");
+    println!("{tool_name} {ARG_ADD} <key> <path> = adds key/path pair");
+    println!("{tool_name} {ARG_REMOVE} <key> = removes key/path pair via key");
+    println!("{tool_name} {ARG_HELP} = gets help");
 
     println!();
-    println!("version: {}, 2023", version());
+    println!("version: {}, 2024", version());
 }
 
 fn main() {
@@ -80,6 +86,8 @@ fn main() {
         } else if args.len() > 1 {
             if args[1].eq(ARG_SHOWALLKEYPAIRS) {
                 error = print_all_key_pairs();
+            } else if args[1].eq(ARG_GETPATH_PREV) {
+                error = print_previous_path();
             } else if args[1].eq(ARG_GETVERSION) {
                 println!("{}", version());
             }
@@ -109,6 +117,24 @@ fn print_all_key_pairs() -> i32 {
     return 0;
 }
 
+fn print_previous_path() -> i32 {
+    match history::pop() {
+        Err(e) => {
+            eprintln!("{}", e);
+            return 1;
+        }
+        Ok(path) => {
+            if path.len() == 0 {
+                return 2;
+            } else {
+                println!("{}", path);
+            }
+        }
+    }
+
+    return 0;
+}
+
 fn print_path_for_key(key: &String) -> i32 {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
@@ -121,6 +147,9 @@ fn print_path_for_key(key: &String) -> i32 {
                     return -1;
                 } else if key_path_pair.key() == key {
                     println!("{}", key_path_pair.path());
+                    if let Err(e) = history::push(key_path_pair.path()) {
+                        eprintln!("{}", e);
+                    }
                     return 0;
                 }
             }
@@ -238,7 +267,6 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     return 0;
 }
 
-
 fn goto_utils_path() -> String {
     let mut res = PathBuf::from(home::home_dir().unwrap());
     res.push(GOTO_UTILS_DIRNAME);
@@ -247,7 +275,13 @@ fn goto_utils_path() -> String {
 
 fn goto_key_paths_file_path() -> String {
     let mut res = goto_utils_path();
-    res += "/keypaths";
+    res += &("/".to_owned() + GOTO_UTILS_DIRNAME_KEYPATHS);
+    return res;
+}
+
+pub fn goto_history_file_path() -> String {
+    let mut res = goto_utils_path();
+    res += &("/".to_owned() + GOTO_UTILS_DIRNAME_HISTORY);
     return res;
 }
 
@@ -274,6 +308,8 @@ mod tests {
     use std::io::Write;
 
     /**
+     * Creates .gotoutils directory at user home directory
+     *
      * Creates a keypaths with one entry
      */
     pub fn setup() {
@@ -305,6 +341,9 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    /**
+     * removes gotoutils directory
+     */
     pub fn teardown() {
         let path = goto_utils_path();
         let result = fs::remove_dir_all(path);

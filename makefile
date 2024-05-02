@@ -12,6 +12,7 @@ GOTO_SCRIPT_PATH = ./scripts/$(GOTO_SCRIPT_NAME)
 BIN_DIR = ./bin
 BIN_DIR_RELEASE = $(BIN_DIR)/release
 BIN_DIR_DEBUG = $(BIN_DIR)/debug
+PACKAGE_NAME = goto
 
 release: setup
 	cargo build --release
@@ -40,5 +41,11 @@ uninstall:
 	rm -rfv $(GOTO_UTILS_DATA_DIR)
 
 test:
-	cargo test -- --test-threads=1 
+	RUST_BACKTRACE=1 cargo test -- --test-threads=1
+
+package:
+	rm -rfv $(PACKAGE_NAME)
+	mkdir $(PACKAGE_NAME)
+	cp -afv $(BIN_DIR_RELEASE)/* $(PACKAGE_NAME)
+	zip -r $(BIN_DIR)/$(PACKAGE_NAME).zip $(PACKAGE_NAME)
 
