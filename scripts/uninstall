@@ -1,0 +1,69 @@
+#!/bin/bash
+# 
+# author: brando
+# date: 5/2/24
+#
+
+## CONSTANTS
+
+SCRIPT_NAME=$(basename $0);
+SCRIPT_PATH=$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P );
+V_ARGS=( "$@" );
+C_ARGS=${#V_ARGS[@]};
+
+## GLOBALS
+
+source $SCRIPT_PATH/install_utils.sh
+
+# 
+# help()
+#
+# returns none
+function help() {
+	printf "usage: $SCRIPT_NAME\n";
+	printf "\n";
+	printf "Removes $GOTO_UTILS_DIR_NAME from your home directory\n";
+	printf "\n";
+	printf "Copyright © 2024 Brando. All rights reserved.\n";
+}
+
+#
+# uninstall
+#
+# returns error code
+function uninstall() {
+	rm -rfv ~/$GOTO_UTILS_DIR_NAME;
+	
+	if [ $? -ne 0 ]; then
+		printf "error: rm returned $?\n";
+		return 2;
+	elif [ -d ~/$GOTO_UTILS_DIR_NAME ]; then
+		printf "error: couldn't remove $(~/$GOTO_UTILS_DIR_NAME)\n";
+		return 1;
+	fi
+
+	return 0;
+}
+
+#
+# main()
+#
+# exits with an error code
+function main() {
+	arguments_read;
+	if [ $? -ne 0 ]; then
+		exit $?;
+	fi
+
+	if [ $gShowHelp == true ]; then
+		help;
+	else
+		uninstall;
+		exit $?;
+	fi
+
+	exit 0;
+}
+
+main;
+
