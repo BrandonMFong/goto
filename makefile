@@ -22,21 +22,29 @@ debug: setup
 	cp -afv $(GOTO_TOOL_BUILD_PATH_DEBUG) $(BIN_DIR_DEBUG)
 	cp -afv $(SCRIPTS_PATH) $(BIN_DIR_DEBUG)
 
-clean:
-	rm -rfv $(BIN_DIR)
-	cargo clean --verbose --color always
-
 setup:
 	@mkdir -p $(BIN_DIR)
 	@mkdir -p $(BIN_DIR_RELEASE)
 	@mkdir -p $(BIN_DIR_DEBUG)
 
+clean:
+	rm -rfv $(BIN_DIR)
+	cargo clean --verbose --color always
+
 test:
 	RUST_BACKTRACE=1 cargo test -- --test-threads=1
 
-package:
+package-release: release
 	rm -rfv $(PACKAGE_NAME)
 	mkdir $(PACKAGE_NAME)
 	cp -afv $(BIN_DIR_RELEASE)/* $(PACKAGE_NAME)
 	zip -r $(BIN_DIR)/$(PACKAGE_NAME).zip $(PACKAGE_NAME)
+	tar vczf $(BIN_DIR)/$(PACKAGE_NAME).tar.gz $(PACKAGE_NAME)
+
+package-debug: debug
+	rm -rfv $(PACKAGE_NAME)
+	mkdir $(PACKAGE_NAME)
+	cp -afv $(BIN_DIR_DEBUG)/* $(PACKAGE_NAME)
+	zip -r $(BIN_DIR)/$(PACKAGE_NAME).zip $(PACKAGE_NAME)
+	tar vczf $(BIN_DIR)/$(PACKAGE_NAME).tar.gz $(PACKAGE_NAME)
 
