@@ -2,6 +2,7 @@
 [x] ability to goto the previous directory
 [x] better logging for cli
 [x] add a function that gets last path that was fetched
-[] make better packaging
+[x] make better packaging
 [x] make test
+[] release packaging
 
