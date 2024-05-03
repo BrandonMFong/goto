@@ -4,7 +4,7 @@
 [x] add a function that gets last path that was fetched
 [x] make better packaging
 [x] make test
-[] release packaging
-[] include our lib
-[] make packaging say platform
+[x] release packaging
+[x] include our lib
+[x] make packaging say platform
 
