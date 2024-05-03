@@ -17,7 +17,7 @@ jobs:
     - name: Test
       run: make test
     - name: Build
-      run: make clean release
+      run: make clean build
     - name: Package
       run: make package-release
 
@@ -28,7 +28,7 @@ jobs:
     - name: Test
       run: make clean test
     - name: Build
-      run: make clean release
+      run: make clean build
     - name: Package
       run: make package-release
 
