@@ -1,18 +1,18 @@
 # goto
 
+![goto-ex](docs/goto-screenshot.png)
+
 Simple tool to help you quickly navigate through your file system using terminal
+
+## Installation
+1. Download latest [archive](https://github.com/brandonmfong/goto/releases/)
+2. Run the `install` script
 
 ## Features
 - `cd`s you to a directory you nicknamed with a key
 - Autocomplete
 
-## Get started 
+## Development
 - Install rust
 - `make`
-- `make install`
-- `source ~/.gotoutils/gotoutils.sh`
-
-## How to use
-### Adding a key and path pair
-`goto-add <key> <relative or full path>
 
