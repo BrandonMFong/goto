@@ -5,4 +5,6 @@
 [x] make better packaging
 [x] make test
 [] release packaging
+[] include our lib
+[] make packaging say platform
 
