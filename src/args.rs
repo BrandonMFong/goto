@@ -15,5 +15,9 @@ impl Args {
             args: env::args().collect()
         }
     }
+
+   pub fn op(&self) -> String {
+        String::from(&self.args[0])
+   }
 }
 
