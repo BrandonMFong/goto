@@ -57,14 +57,9 @@ fn help() {
     println!("version: {}, 2024", version());
 }
 
-fn arguments_read() {
-    let args: Vec<String> = env::args().collect();
-    for arg in args.iter() {
-
-    }
-}
-
 fn main() {
+    let _argsv2 = Args::new();
+
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("Not enough arguments");
@@ -85,21 +80,45 @@ fn main() {
             }
         } else if args.len() > 2 {
             if args[1].eq(ARG_GETPATH) {
-                error = print_path_for_key(&args[2]);
+                //error = print_path_for_key(&args[2]);
+                match print_path_for_key(&args[2]) {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             } else if args[1].eq(ARG_GETKEYS) {
-                error = print_keys_for_path(&args[2]);
+                //error = print_keys_for_path(&args[2]);
+                match print_keys_for_path(&args[2]) {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             } else if args[1].eq(ARG_GETSUGKEYS) {
-                error = print_suggested_keys(&args[2]);
+                //error = print_suggested_keys(&args[2]);
+                match print_suggested_keys(&args[2]) {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             } else if args[1].eq(ARG_REMOVE) {
-                error = remove_key_path(&args[2]);
+                //error = remove_key_path(&args[2]);
+                match remove_key_path(&args[2]) {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             } else {
                 eprintln!("unknown argument: {}", &args[1]);
             }
         } else if args.len() > 1 {
             if args[1].eq(ARG_SHOWALLKEYPAIRS) {
-                error = print_all_key_pairs();
+                //error = print_all_key_pairs();
+                match print_all_key_pairs() {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             } else if args[1].eq(ARG_GETPATH_PREV) {
-                error = print_previous_path();
+                //error = print_previous_path();
+                match print_previous_path() {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             } else if args[1].eq(ARG_GETVERSION) {
                 println!("{}", version());
             }
@@ -109,16 +128,16 @@ fn main() {
     process::exit(error);
 }
 
-fn print_all_key_pairs() -> i32 {
+fn print_all_key_pairs() -> Result<(), i32> {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("{}", e);
-            return 1;
+            return Err(1)
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return 1;
+                    return Err(1)
                 } else {
                     println!("{} => {}", key_path_pair.key(), key_path_pair.path());
                 }
@@ -126,43 +145,43 @@ fn print_all_key_pairs() -> i32 {
         }
     }
 
-    return 0;
+    Ok(())
 }
 
-fn print_previous_path() -> i32 {
+fn print_previous_path() -> Result<(), i32> {
     match history::pop() {
         Err(e) => {
             eprintln!("{}", e);
-            return 1;
+            return Err(1)
         }
         Ok(path) => {
             if path.len() == 0 {
-                return 2;
+                return Err(1)
             } else {
                 println!("{}", path);
             }
         }
     }
 
-    return 0;
+    Ok(())
 }
 
-fn print_path_for_key(key: &String) -> i32 {
+fn print_path_for_key(key: &String) -> Result<(), i32> {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return 1;
+            return Err(1)
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return 1;
+                    return Err(1)
                 } else if key_path_pair.key() == key {
                     println!("{}", key_path_pair.path());
                     if let Err(e) = history::push(key_path_pair.path()) {
                         eprintln!("{}", e);
                     }
-                    return 0;
+                    return Ok(())
                 }
             }
         }
@@ -170,13 +189,13 @@ fn print_path_for_key(key: &String) -> i32 {
 
     eprintln!("Could not find path for key: {key}");
 
-    return 1;
+    Err(1)
 }
 
-fn print_keys_for_path(path: &String) -> i32 {
+fn print_keys_for_path(path: &String) -> Result<(), i32> {
     if !Path::new(path).exists() {
         eprintln!("path \"{}\" is not an existing path", path);
-        return 1;
+        return Err(1)
     }
 
     // Expand the input path
@@ -184,12 +203,12 @@ fn print_keys_for_path(path: &String) -> i32 {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return 1;
+            return Err(1)
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return 1;
+                    return Err(1)
                 } else if key_path_pair.path() == expanded_path {
                     println!("{} => {}", key_path_pair.key(), key_path_pair.path());
                 }
@@ -197,23 +216,23 @@ fn print_keys_for_path(path: &String) -> i32 {
         }
     }
 
-    return 0;
+    Ok(())
 }
 
 /**
  * prints similar keys to input
  */
-fn print_suggested_keys(input: &String) -> i32 {
+fn print_suggested_keys(input: &String) -> Result<(), i32> {
     // Expand the input path
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return 1;
+            return Err(1)
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return 1;
+                    return Err(1)
                 } else if key_path_pair.key().starts_with(input) {
                     println!("{}", key_path_pair.key());
                 }
@@ -221,28 +240,28 @@ fn print_suggested_keys(input: &String) -> i32 {
         }
     }
 
-    return 0;
+    Ok(())
 }
 
-fn remove_key_path(key: &String) -> i32 {
+fn remove_key_path(key: &String) -> Result<(), i32> {
     let key_paths_file_path = goto_key_paths_file_path();
     let config = Config::new(&key_paths_file_path);
     if let Err(e) = config {
         eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-        return 1;
+        return Err(1)
     }
 
     match config.unwrap().remove_keypath(key) {
         Err(e) => {
             eprintln!("could not remove key: {}", key);
             eprintln!("{}", e);
-            return 1;
+            return Err(1)
         } Ok (_) => {
 
         }
     }
 
-    return 0;
+    Ok(())
 }
 
 fn add_key_path(key: &String, path: &String) -> Result<(), i32> {
