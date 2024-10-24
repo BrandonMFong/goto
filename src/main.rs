@@ -6,6 +6,7 @@
 mod keypath;
 mod config;
 mod history;
+mod args;
 
 use std::env;
 use std::process;
@@ -15,6 +16,7 @@ use std::path::Path;
 use std::fs::canonicalize;
 use crate::keypath::KeyPath;
 use crate::config::Config;
+use crate::args::Args;
 use std::fs;
 
 static ARG_GETPATH: &'static str = "getpath";
@@ -55,6 +57,13 @@ fn help() {
     println!("version: {}, 2024", version());
 }
 
+fn arguments_read() {
+    let args: Vec<String> = env::args().collect();
+    for arg in args.iter() {
+
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
@@ -69,7 +78,6 @@ fn main() {
         // TODO: passing 'add' wont show a good error log
         if args.len() > 3 {
             if args[1].eq(ARG_ADD) {
-                //error = add_key_path(&args[2], &args[3]);
                 match add_key_path(&args[2], &args[3]) {
                     Err(errno) => error = errno,
                     Ok(()) => {}
