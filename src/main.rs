@@ -80,25 +80,21 @@ fn main() {
             }
         } else if args.len() > 2 {
             if args[1].eq(ARG_GETPATH) {
-                //error = print_path_for_key(&args[2]);
                 match print_path_for_key(&args[2]) {
                     Err(errno) => error = errno,
                     Ok(()) => {}
                 }
             } else if args[1].eq(ARG_GETKEYS) {
-                //error = print_keys_for_path(&args[2]);
                 match print_keys_for_path(&args[2]) {
                     Err(errno) => error = errno,
                     Ok(()) => {}
                 }
             } else if args[1].eq(ARG_GETSUGKEYS) {
-                //error = print_suggested_keys(&args[2]);
                 match print_suggested_keys(&args[2]) {
                     Err(errno) => error = errno,
                     Ok(()) => {}
                 }
             } else if args[1].eq(ARG_REMOVE) {
-                //error = remove_key_path(&args[2]);
                 match remove_key_path(&args[2]) {
                     Err(errno) => error = errno,
                     Ok(()) => {}
@@ -108,13 +104,11 @@ fn main() {
             }
         } else if args.len() > 1 {
             if args[1].eq(ARG_SHOWALLKEYPAIRS) {
-                //error = print_all_key_pairs();
                 match print_all_key_pairs() {
                     Err(errno) => error = errno,
                     Ok(()) => {}
                 }
             } else if args[1].eq(ARG_GETPATH_PREV) {
-                //error = print_previous_path();
                 match print_previous_path() {
                     Err(errno) => error = errno,
                     Ok(()) => {}
