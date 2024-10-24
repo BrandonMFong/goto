@@ -1,3 +1,5 @@
+0.2
+
 0.1
 [x] ability to goto the previous directory
 [x] better logging for cli

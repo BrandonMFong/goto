@@ -69,7 +69,11 @@ fn main() {
         // TODO: passing 'add' wont show a good error log
         if args.len() > 3 {
             if args[1].eq(ARG_ADD) {
-                error = add_key_path(&args[2], &args[3]);
+                //error = add_key_path(&args[2], &args[3]);
+                match add_key_path(&args[2], &args[3]) {
+                    Err(errno) => error = errno,
+                    Ok(()) => {}
+                }
             }
         } else if args.len() > 2 {
             if args[1].eq(ARG_GETPATH) {
@@ -101,12 +105,12 @@ fn print_all_key_pairs() -> i32 {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("{}", e);
-            return -1;
+            return 1;
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return -1;
+                    return 1;
                 } else {
                     println!("{} => {}", key_path_pair.key(), key_path_pair.path());
                 }
@@ -139,12 +143,12 @@ fn print_path_for_key(key: &String) -> i32 {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return -1;
+            return 1;
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return -1;
+                    return 1;
                 } else if key_path_pair.key() == key {
                     println!("{}", key_path_pair.path());
                     if let Err(e) = history::push(key_path_pair.path()) {
@@ -158,13 +162,13 @@ fn print_path_for_key(key: &String) -> i32 {
 
     eprintln!("Could not find path for key: {key}");
 
-    return -1;
+    return 1;
 }
 
 fn print_keys_for_path(path: &String) -> i32 {
     if !Path::new(path).exists() {
         eprintln!("path \"{}\" is not an existing path", path);
-        return -1;
+        return 1;
     }
 
     // Expand the input path
@@ -172,12 +176,12 @@ fn print_keys_for_path(path: &String) -> i32 {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return -1;
+            return 1;
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return -1;
+                    return 1;
                 } else if key_path_pair.path() == expanded_path {
                     println!("{} => {}", key_path_pair.key(), key_path_pair.path());
                 }
@@ -196,12 +200,12 @@ fn print_suggested_keys(input: &String) -> i32 {
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-            return -1;
+            return 1;
         } Ok(conf) => {
             for key_path_pair in conf.entries() {
                 if !key_path_pair.is_valid() {
                     eprintln!("error in key path pair");
-                    return -1;
+                    return 1;
                 } else if key_path_pair.key().starts_with(input) {
                     println!("{}", key_path_pair.key());
                 }
@@ -217,14 +221,14 @@ fn remove_key_path(key: &String) -> i32 {
     let config = Config::new(&key_paths_file_path);
     if let Err(e) = config {
         eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-        return -1;
+        return 1;
     }
 
     match config.unwrap().remove_keypath(key) {
         Err(e) => {
             eprintln!("could not remove key: {}", key);
             eprintln!("{}", e);
-            return -1;
+            return 1;
         } Ok (_) => {
 
         }
@@ -233,18 +237,18 @@ fn remove_key_path(key: &String) -> i32 {
     return 0;
 }
 
-fn add_key_path(key: &String, path: &String) -> i32 {
+fn add_key_path(key: &String, path: &String) -> Result<(), i32> {
     let key_paths_file_path = goto_key_paths_file_path();
     let config = Config::new(&key_paths_file_path);
     if let Err(e) = config {
         eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
-        return -1;
+        return Err(1);
     } else {
         let conf = config.as_ref().unwrap();
         for key_path_pair in conf.entries() {
             if key_path_pair.is_valid() && key_path_pair.key() == key {
                 eprintln!("key ({key}) already exists");
-                return -1;
+                return Err(1);
             }
         }
     }
@@ -254,17 +258,18 @@ fn add_key_path(key: &String, path: &String) -> i32 {
     let kp = KeyPath::new(&key, &expanded_path);
     if !kp.is_valid() {
         eprintln!("invalid key path pair");
-        return -1;
+        return Err(1);
     }
   
     // write new keypath to config
     match config.unwrap().enter_keypath(kp) {
         Err(e) => {
             eprintln!("experienced an error entry new key path: {}", e);
+            return Err(1)
         } Ok(_) => {}
     }
 
-    return 0;
+    Ok(())
 }
 
 fn goto_utils_path() -> String {
