@@ -6,7 +6,6 @@
 mod keypath;
 mod config;
 mod history;
-mod args;
 
 use std::env;
 use std::process;
@@ -16,7 +15,6 @@ use std::path::Path;
 use std::fs::canonicalize;
 use crate::keypath::KeyPath;
 use crate::config::Config;
-use crate::args::Args;
 use std::fs;
 
 static ARG_GETPATH: &'static str = "getpath";
@@ -58,82 +56,29 @@ fn help() {
 }
 
 fn main() {
-    let args2 = Args::new();
-
-    let args: Vec<String> = env::args().collect();
-    /*
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        eprintln!("Not enough arguments");
-        process::exit(1);
-    }
-    */
-
     let mut error = 0;
     match run() {
         Err(errno) => error = errno,
         Ok(()) => {}
     } 
-/*
-    if args[1].eq(ARG_HELP) {
-        help();
-    } else if args[1].eq(ARG_ADD) {
-        // TODO: passing 'add' wont show a good error log
-        match add_key_path(&args[2], &args[3]) {
-            err(errno) => error = errno,
-            ok(()) => {}
-        }
-    } else if args[1].eq(ARG_GETPATH) {
-        match print_path_for_key(&args[2]) {
-            Err(errno) => error = errno,
-            Ok(()) => {}
-        }
-    } else if args[1].eq(ARG_GETKEYS) {
-        match print_keys_for_path(&args[2]) {
-            Err(errno) => error = errno,
-            Ok(()) => {}
-        }
-    } else if args[1].eq(ARG_GETSUGKEYS) {
-        match print_suggested_keys(&args[2]) {
-            Err(errno) => error = errno,
-            Ok(()) => {}
-        }
-    } else if args[1].eq(ARG_REMOVE) {
-        match remove_key_path(&args[2]) {
-            Err(errno) => error = errno,
-            Ok(()) => {}
-        }
-    } else if args[1].eq(ARG_SHOWALLKEYPAIRS) {
-        match print_all_key_pairs() {
-            Err(errno) => error = errno,
-            Ok(()) => {}
-        }
-    } else if args[1].eq(ARG_GETPATH_PREV) {
-        match print_previous_path() {
-            Err(errno) => error = errno,
-            Ok(()) => {}
-        }
-    } else if args[1].eq(ARG_GETVERSION) {
-        println!("{}", version());
-    }
-*/
+
     process::exit(error);
 }
 
 fn run() -> Result<(), i32> {
     let args: Vec<String> = env::args().collect();
-    if args[1].eq(ARG_HELP) {
+    if args.len() < 2 || args[1].eq(ARG_HELP) {
         help();
     } else if args[1].eq(ARG_ADD) {
-        add_key_path(&args[2], &args[3])?;
+        add_key_path(&args)?;
     } else if args[1].eq(ARG_GETPATH) {
-        print_path_for_key(&args[2])?;
+        print_path_for_key(&args)?;
     } else if args[1].eq(ARG_GETKEYS) {
-        print_keys_for_path(&args[2])?;
+        print_keys_for_path(&args)?;
     } else if args[1].eq(ARG_GETSUGKEYS) {
-        print_suggested_keys(&args[2])?;
+        print_suggested_keys(&args)?;
     } else if args[1].eq(ARG_REMOVE) {
-        remove_key_path(&args[2])?;
+        remove_key_path(&args)?;
     } else if args[1].eq(ARG_SHOWALLKEYPAIRS) {
         print_all_key_pairs()?;
     } else if args[1].eq(ARG_GETPATH_PREV) {
@@ -183,7 +128,12 @@ fn print_previous_path() -> Result<(), i32> {
     Ok(())
 }
 
-fn print_path_for_key(key: &String) -> Result<(), i32> {
+fn print_path_for_key(args: &Vec<String>) -> Result<(), i32> {
+    if args.len() < 3 {
+        return Err(1);
+    }
+
+    let key: &String = &args[2];
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
@@ -209,7 +159,12 @@ fn print_path_for_key(key: &String) -> Result<(), i32> {
     Err(1)
 }
 
-fn print_keys_for_path(path: &String) -> Result<(), i32> {
+fn print_keys_for_path(args: &Vec<String>) -> Result<(), i32> {
+    if args.len() < 3 {
+        return Err(1);
+    }
+
+    let path: &String = &args[2];
     if !Path::new(path).exists() {
         eprintln!("path \"{}\" is not an existing path", path);
         return Err(1)
@@ -239,7 +194,12 @@ fn print_keys_for_path(path: &String) -> Result<(), i32> {
 /**
  * prints similar keys to input
  */
-fn print_suggested_keys(input: &String) -> Result<(), i32> {
+fn print_suggested_keys(args: &Vec<String>) -> Result<(), i32> {
+    if args.len() < 3 {
+        return Err(1);
+    }
+
+    let input: &String = &args[2];
     // Expand the input path
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
@@ -260,7 +220,12 @@ fn print_suggested_keys(input: &String) -> Result<(), i32> {
     Ok(())
 }
 
-fn remove_key_path(key: &String) -> Result<(), i32> {
+fn remove_key_path(args: &Vec<String>) -> Result<(), i32> {
+    if args.len() < 3 {
+        return Err(1);
+    }
+
+    let key: &String = &args[2];
     let key_paths_file_path = goto_key_paths_file_path();
     let config = Config::new(&key_paths_file_path);
     if let Err(e) = config {
@@ -281,7 +246,13 @@ fn remove_key_path(key: &String) -> Result<(), i32> {
     Ok(())
 }
 
-fn add_key_path(key: &String, path: &String) -> Result<(), i32> {
+fn add_key_path(args: &Vec<String>) -> Result<(), i32> {
+    if args.len() < 4 {
+        return Err(1);
+    }
+
+    let key: &String = &args[2];
+    let path: &String = &args[3];
     let key_paths_file_path = goto_key_paths_file_path();
     let config = Config::new(&key_paths_file_path);
     if let Err(e) = config {
