@@ -58,68 +58,91 @@ fn help() {
 }
 
 fn main() {
-    let _argsv2 = Args::new();
+    let args2 = Args::new();
 
+    let args: Vec<String> = env::args().collect();
+    /*
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         eprintln!("Not enough arguments");
         process::exit(1);
     }
+    */
 
     let mut error = 0;
+    match run() {
+        Err(errno) => error = errno,
+        Ok(()) => {}
+    } 
+/*
     if args[1].eq(ARG_HELP) {
         help();
-    } else {
+    } else if args[1].eq(ARG_ADD) {
         // TODO: passing 'add' wont show a good error log
-        if args.len() > 3 {
-            if args[1].eq(ARG_ADD) {
-                match add_key_path(&args[2], &args[3]) {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            }
-        } else if args.len() > 2 {
-            if args[1].eq(ARG_GETPATH) {
-                match print_path_for_key(&args[2]) {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            } else if args[1].eq(ARG_GETKEYS) {
-                match print_keys_for_path(&args[2]) {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            } else if args[1].eq(ARG_GETSUGKEYS) {
-                match print_suggested_keys(&args[2]) {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            } else if args[1].eq(ARG_REMOVE) {
-                match remove_key_path(&args[2]) {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            } else {
-                eprintln!("unknown argument: {}", &args[1]);
-            }
-        } else if args.len() > 1 {
-            if args[1].eq(ARG_SHOWALLKEYPAIRS) {
-                match print_all_key_pairs() {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            } else if args[1].eq(ARG_GETPATH_PREV) {
-                match print_previous_path() {
-                    Err(errno) => error = errno,
-                    Ok(()) => {}
-                }
-            } else if args[1].eq(ARG_GETVERSION) {
-                println!("{}", version());
-            }
+        match add_key_path(&args[2], &args[3]) {
+            err(errno) => error = errno,
+            ok(()) => {}
         }
+    } else if args[1].eq(ARG_GETPATH) {
+        match print_path_for_key(&args[2]) {
+            Err(errno) => error = errno,
+            Ok(()) => {}
+        }
+    } else if args[1].eq(ARG_GETKEYS) {
+        match print_keys_for_path(&args[2]) {
+            Err(errno) => error = errno,
+            Ok(()) => {}
+        }
+    } else if args[1].eq(ARG_GETSUGKEYS) {
+        match print_suggested_keys(&args[2]) {
+            Err(errno) => error = errno,
+            Ok(()) => {}
+        }
+    } else if args[1].eq(ARG_REMOVE) {
+        match remove_key_path(&args[2]) {
+            Err(errno) => error = errno,
+            Ok(()) => {}
+        }
+    } else if args[1].eq(ARG_SHOWALLKEYPAIRS) {
+        match print_all_key_pairs() {
+            Err(errno) => error = errno,
+            Ok(()) => {}
+        }
+    } else if args[1].eq(ARG_GETPATH_PREV) {
+        match print_previous_path() {
+            Err(errno) => error = errno,
+            Ok(()) => {}
+        }
+    } else if args[1].eq(ARG_GETVERSION) {
+        println!("{}", version());
+    }
+*/
+    process::exit(error);
+}
+
+fn run() -> Result<(), i32> {
+    let args: Vec<String> = env::args().collect();
+    if args[1].eq(ARG_HELP) {
+        help();
+    } else if args[1].eq(ARG_ADD) {
+        add_key_path(&args[2], &args[3])?;
+    } else if args[1].eq(ARG_GETPATH) {
+        print_path_for_key(&args[2])?;
+    } else if args[1].eq(ARG_GETKEYS) {
+        print_keys_for_path(&args[2])?;
+    } else if args[1].eq(ARG_GETSUGKEYS) {
+        print_suggested_keys(&args[2])?;
+    } else if args[1].eq(ARG_REMOVE) {
+        remove_key_path(&args[2])?;
+    } else if args[1].eq(ARG_SHOWALLKEYPAIRS) {
+        print_all_key_pairs()?;
+    } else if args[1].eq(ARG_GETPATH_PREV) {
+        print_previous_path()?;
+    } else if args[1].eq(ARG_GETVERSION) {
+        println!("{}", version());
     }
 
-    process::exit(error);
+    Ok(())
 }
 
 fn print_all_key_pairs() -> Result<(), i32> {
