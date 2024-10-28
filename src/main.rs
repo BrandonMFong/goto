@@ -18,13 +18,13 @@ use crate::config::Config;
 use std::fs;
 
 static ARG_GETPATH: &'static str = "getpath";
-static ARG_GETPATH_PREV: &'static str = "getpath-prev";
-static ARG_GETKEYS: &'static str = "getkeys";
+static ARG_GETPATH_PREV: &'static str = "--show-prev";
+static ARG_GETKEYS: &'static str = "--show-keys";
 static ARG_GETSUGKEYS: &'static str = "getsugkeys";
-static ARG_ADD: &'static str = "add";
-static ARG_REMOVE: &'static str = "rm";
-static ARG_HELP: &'static str = "help";
-static ARG_SHOWALLKEYPAIRS: &'static str = "getallpairs";
+static ARG_ADD: &'static str = "--add";
+static ARG_REMOVE: &'static str = "--remove";
+static ARG_HELP: &'static str = "--help";
+static ARG_SHOWALLKEYPAIRS: &'static str = "--show-all";
 static ARG_GETVERSION: &'static str = "--version";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
