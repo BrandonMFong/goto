@@ -3,8 +3,16 @@
 GOTO_UTILS_DATA_DIR=~/.gotoutils
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
-# gets path from keypaths file using key pair then cds to it
 function goto() {
+	p=$($GOTO_UTILS_TOOL $@);
+	error=$?;
+	if [ $error -eq 0 ]; then 
+		cd $p;
+	fi
+}
+
+# gets path from keypaths file using key pair then cds to it
+function _goto() {
 	p=$($GOTO_UTILS_TOOL getpath $1);
 	error=$?;
 	if [ $error -eq 0 ]; then 

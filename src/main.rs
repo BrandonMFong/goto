@@ -25,7 +25,7 @@ static ARG_ADD: &'static str = "add";
 static ARG_REMOVE: &'static str = "rm";
 static ARG_HELP: &'static str = "help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "getallpairs";
-static ARG_GETVERSION: &'static str = "version";
+static ARG_GETVERSION: &'static str = "--version";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
