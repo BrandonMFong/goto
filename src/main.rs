@@ -17,7 +17,7 @@ use crate::keypath::KeyPath;
 use crate::config::Config;
 use std::fs;
 
-static ARG_GETPATH: &'static str = "getpath";
+//static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETPATH_PREV: &'static str = "--show-prev";
 static ARG_GETKEYS: &'static str = "--show-keys";
 static ARG_GETSUGKEYS: &'static str = "getsugkeys";
@@ -43,7 +43,7 @@ fn help() {
     println!("usage: {tool_name} <arg>");
     println!("arguments:");
     println!("");
-    println!("{tool_name} {ARG_GETPATH} <key> = returns path for a key");
+    //println!("{tool_name} {ARG_GETPATH} <key> = returns path for a key");
     println!("{tool_name} {ARG_GETPATH_PREV} = returns the previous path that was queried");
     println!("{tool_name} {ARG_GETKEYS} <path> = returns all keys for the path");
     println!("{tool_name} {ARG_GETSUGKEYS} = returns suggested keys");
@@ -71,8 +71,8 @@ fn run() -> Result<(), i32> {
         help();
     } else if args[1].eq(ARG_ADD) {
         add_key_path(&args)?;
-    } else if args[1].eq(ARG_GETPATH) {
-        print_path_for_key(&args)?;
+//    } else if args[1].eq(ARG_GETPATH) {
+//        print_path_for_key(&args)?;
     } else if args[1].eq(ARG_GETKEYS) {
         print_keys_for_path(&args)?;
     } else if args[1].eq(ARG_GETSUGKEYS) {
@@ -85,6 +85,8 @@ fn run() -> Result<(), i32> {
         print_previous_path()?;
     } else if args[1].eq(ARG_GETVERSION) {
         println!("{}", version());
+    } else {
+        print_path_for_key(&args)?;
     }
 
     Ok(())
@@ -129,11 +131,11 @@ fn print_previous_path() -> Result<(), i32> {
 }
 
 fn print_path_for_key(args: &Vec<String>) -> Result<(), i32> {
-    if args.len() < 3 {
+    if args.len() < 2 {
         return Err(1);
     }
 
-    let key: &String = &args[2];
+    let key: &String = &args[1];
     match Config::new(&goto_key_paths_file_path()) {
         Err(e) => {
             eprintln!("Could not read file {}: {}", goto_key_paths_file_path(), e);
