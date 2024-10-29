@@ -58,12 +58,14 @@ function goto() {
 	return $error;
 }
 
-# https://keyholesoftware.com/2022/07/18/adding-autocompletion-to-bash-scripts/
-function __goto_completion() {
-	if [ $COMP_CWORD -eq 1 ]; then 
-		cur=${COMP_WORDS[COMP_CWORD]}
-		COMPREPLY=( $($GOTO_UTILS_TOOL --show-suggested-keys $cur) )
-	fi
-}
-complete -F __goto_completion goto
+if [ "$0" == "-bash" ]; then 
+	# https://keyholesoftware.com/2022/07/18/adding-autocompletion-to-bash-scripts/
+	function __goto_completion() {
+		if [ $COMP_CWORD -eq 1 ]; then 
+			cur=${COMP_WORDS[COMP_CWORD]}
+			COMPREPLY=( $($GOTO_UTILS_TOOL --show-suggested-keys $cur) )
+		fi
+	}
+	complete -F __goto_completion goto
+fi
 
