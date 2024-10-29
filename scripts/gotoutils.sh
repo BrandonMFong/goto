@@ -6,9 +6,16 @@ GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
 GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
 
+function emulate_goto() {
+	type emulate > /dev/null 2>&1;
+	if [ $? -eq 0 ]; then
+		emulate $@;
+	fi
+}
+
 function goto() {
-	old=$(emulate);
-	emulate bash;
+	old=$(emulate_goto);
+	emulate_goto bash;
 	cont=true;
 	p=$($GOTO_UTILS_TOOL $@);
 	error=$?;
@@ -47,7 +54,7 @@ function goto() {
 		fi
 	fi
 	
-	emulate $old;
+	emulate_goto $old;
 	return $error;
 }
 
