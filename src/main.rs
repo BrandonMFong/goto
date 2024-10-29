@@ -72,8 +72,6 @@ fn run() -> Result<(), i32> {
         help();
     } else if args[1].eq(ARG_ADD) {
         add_key_path(&args)?;
-//    } else if args[1].eq(ARG_GETPATH) {
-//        print_path_for_key(&args)?;
     } else if args[1].eq(ARG_GETKEYS) {
         print_keys_for_path(&args)?;
     } else if args[1].eq(ARG_GETSUGKEYS) {

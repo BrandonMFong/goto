@@ -12,18 +12,30 @@ function goto() {
 	cont=true;
 	p=$($GOTO_UTILS_TOOL $@);
 	error=$?;
-
-	len=$#
-	if [ $len -eq 0 ]; then 
-		printf "$p\n";
+	if [ $error -ne 0 ]; then
+		if [ ${#p} -gt 0 ]; then
+			printf "$p\n";
+		fi
 		cont=false;
+	fi
+
+	if [ $cont == true ]; then
+		len=$#;
+		if [ $len -eq 0 ]; then 
+			if [ ${#p} -gt 0 ]; then
+				printf "$p\n";
+			fi
+			cont=false;
+		fi
 	fi
 
 	if [ $cont == true ]; then
 		for arg in ${GOTO_UTILS_TOOL_ACCEPTED_ARGS[@]};
 		do
 			if [ "$arg" == "$1" ]; then
-				printf "$p\n";
+				if [ ${#p} -gt 0 ]; then
+					printf "$p\n";
+				fi
 				cont=false;
 			fi
 		done
@@ -36,6 +48,7 @@ function goto() {
 	fi
 
 	emulate $old;
+	return $error;
 }
 
 # gets path from keypaths file using key pair then cds to it
