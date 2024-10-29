@@ -18,7 +18,7 @@ use crate::config::Config;
 use std::fs;
 
 //static ARG_GETPATH: &'static str = "getpath";
-static ARG_GETPATH_PREV: &'static str = "--show-prev";
+static ARG_GETPATH_PREV: &'static str = "--prev";
 static ARG_GETKEYS: &'static str = "--show-keys";
 static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
 static ARG_ADD: &'static str = "--add";

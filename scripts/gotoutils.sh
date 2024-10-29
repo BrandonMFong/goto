@@ -16,6 +16,7 @@ function goto() {
 		cont=false;
 	fi
 
+	# should default to show help
 	if [ $cont == true ]; then
 		len=$#;
 		if [ $len -eq 0 ]; then 
@@ -23,10 +24,16 @@ function goto() {
 		fi
 	fi
 
+	# seeing if the user passed an argument for the tool as opposed
+	# to a key for a path
+	#
+	# we are also looking out for `--prev`, as the tool will
+	# return the previous directory we were in. Then we will cd
+	# into that directory
 	if [ $cont == true ]; then
 		for arg in ${GOTO_UTILS_TOOL_ACCEPTED_ARGS[@]};
 		do
-			if [ "$arg" == "$1" ]; then
+			if [ "$arg" == "$1" ] && [ "$arg" != "--prev" ]; then
 				cont=false;
 			fi
 		done
