@@ -1,14 +1,41 @@
 #!/bin/bash
 
+
 GOTO_UTILS_DATA_DIR=~/.gotoutils
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
 
+GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
+
 function goto() {
+	old=$(emulate);
+	emulate bash;
+	cont=true;
 	p=$($GOTO_UTILS_TOOL $@);
 	error=$?;
-	if [ $error -eq 0 ]; then 
-		cd $p;
+
+	len=$#
+	if [ $len -eq 0 ]; then 
+		printf "$p\n";
+		cont=false;
 	fi
+
+	if [ $cont == true ]; then
+		for arg in ${GOTO_UTILS_TOOL_ACCEPTED_ARGS[@]};
+		do
+			if [ "$arg" == "$1" ]; then
+				printf "$p\n";
+				cont=false;
+			fi
+		done
+	fi
+
+	if [ $cont == true ]; then
+		if [ $error -eq 0 ]; then
+			cd $p;
+		fi
+	fi
+
+	emulate $old;
 }
 
 # gets path from keypaths file using key pair then cds to it

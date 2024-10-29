@@ -26,6 +26,7 @@ static ARG_REMOVE: &'static str = "--remove";
 static ARG_HELP: &'static str = "--help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "--show-all";
 static ARG_GETVERSION: &'static str = "--version";
+static ARG_ACCEPTEDARGS: &'static str = "--accepted-args";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
@@ -39,7 +40,7 @@ fn version() -> String {
 
 fn help() {
     let args: Vec<String> = env::args().collect();
-    let tool_name = &args[0];
+    let tool_name = Path::new(&args[0]).file_stem().unwrap().to_str().unwrap();
     println!("usage: {tool_name} <arg>");
     println!("arguments:");
     println!("");
@@ -85,9 +86,21 @@ fn run() -> Result<(), i32> {
         print_previous_path()?;
     } else if args[1].eq(ARG_GETVERSION) {
         println!("{}", version());
+    } else if args[1].eq(ARG_ACCEPTEDARGS) {
+        print_all_accepted_args()?;
     } else {
         print_path_for_key(&args)?;
     }
+
+    Ok(())
+}
+
+fn print_all_accepted_args() -> Result<(), i32> {
+    println!(
+    "{ARG_GETPATH_PREV} {ARG_GETKEYS} \
+    {ARG_GETSUGKEYS} {ARG_ADD} {ARG_REMOVE} \
+    {ARG_HELP} {ARG_SHOWALLKEYPAIRS} \
+    {ARG_GETVERSION} {ARG_ACCEPTEDARGS}");
 
     Ok(())
 }
