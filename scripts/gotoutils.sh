@@ -13,18 +13,12 @@ function goto() {
 	p=$($GOTO_UTILS_TOOL $@);
 	error=$?;
 	if [ $error -ne 0 ]; then
-		if [ ${#p} -gt 0 ]; then
-			printf "$p\n";
-		fi
 		cont=false;
 	fi
 
 	if [ $cont == true ]; then
 		len=$#;
 		if [ $len -eq 0 ]; then 
-			if [ ${#p} -gt 0 ]; then
-				printf "$p\n";
-			fi
 			cont=false;
 		fi
 	fi
@@ -33,20 +27,19 @@ function goto() {
 		for arg in ${GOTO_UTILS_TOOL_ACCEPTED_ARGS[@]};
 		do
 			if [ "$arg" == "$1" ]; then
-				if [ ${#p} -gt 0 ]; then
-					printf "$p\n";
-				fi
 				cont=false;
 			fi
 		done
 	fi
 
 	if [ $cont == true ]; then
-		if [ $error -eq 0 ]; then
-			cd $p;
+		cd $p;
+	else
+		if [ ${#p} -gt 0 ]; then
+			printf "$p\n";
 		fi
 	fi
-
+	
 	emulate $old;
 	return $error;
 }
