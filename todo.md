@@ -1,5 +1,5 @@
 0.2
-[] 
+[] auto completion for zsh
 
 0.1
 [x] ability to goto the previous directory
