@@ -76,7 +76,11 @@ function main() {
 			exit $?;
 		else
 			printf "Installation complete\n";
-			printf "Please add \`source ~/.gotoutils/gotoutils.sh\` in your shell profile\n";
+			if [ -n $ZSH_VERSION ]; then
+				printf "Please add \`source ~/.gotoutils/gotoutils.sh; goto_init_zsh;\` in your shell profile\n";
+			else
+				printf "Please add \`source ~/.gotoutils/gotoutils.sh; goto_init_bash;\` in your shell profile\n";
+			fi
 		fi
 	fi
 
