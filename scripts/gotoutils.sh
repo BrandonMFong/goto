@@ -71,5 +71,15 @@ function goto_init_bash() {
 }
 
 function goto_init_zsh() {
+	echo "" > /dev/null 2>&1;
 }
 
+function goto_init() {
+	if [ -n $ZSH_VERSION ]; then
+		goto_init_zsh;
+	else
+		goto_init_bash;
+	fi
+}
+
+goto_init;
