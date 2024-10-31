@@ -24,12 +24,23 @@ static ARG_REMOVE: &'static str = "--remove";
 static ARG_HELP: &'static str = "--help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "--show-all";
 static ARG_GETVERSION: &'static str = "--version";
+
+/**
+ * outputs all args in a space-delimited list
+ */
 static ARG_ACCEPTEDARGS: &'static str = "--accepted-args";
 
 /**
  * this argument expects a parameter
  */
 static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
+
+/**
+ * outputs the content for zsh-completions
+ *
+ * https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org#table-of-contents
+ */
+static ARG_COMPLETION_ZSH: &'static str = "--completion-zsh";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
@@ -58,6 +69,23 @@ fn help() {
 
     println!();
     println!("version: {}, 2024", version());
+}
+
+/**
+ * writes content for the completion file: _goto
+ */
+fn completion_zsh() {
+    println!("#compdef goto");
+    println!("local -a subcmds");
+    println!("subcmds=( \
+        '{ARG_HELP}:gets help' \
+        '{ARG_GETPATH_PREV}:cd back into previous directory' \
+        '{ARG_GETKEYS}:returns all keys for the path' \
+        '{ARG_ADD}:adds key/path pair' \
+        '{ARG_REMOVE}:removes key/path pair via key' \
+        '{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \
+    )");
+    println!("_describe 'goto' subcmds");
 }
 
 fn main() {
@@ -90,6 +118,8 @@ fn run() -> Result<(), i32> {
         println!("{}", version());
     } else if args[1].eq(ARG_ACCEPTEDARGS) {
         print_all_accepted_args()?;
+    } else if args[1].eq(ARG_COMPLETION_ZSH) {
+        completion_zsh();
     } else {
         print_path_for_key(&args)?;
     }
@@ -102,7 +132,8 @@ fn print_all_accepted_args() -> Result<(), i32> {
     "{ARG_GETPATH_PREV} {ARG_GETKEYS} \
     {ARG_GETSUGKEYS} {ARG_ADD} {ARG_REMOVE} \
     {ARG_HELP} {ARG_SHOWALLKEYPAIRS} \
-    {ARG_GETVERSION} {ARG_ACCEPTEDARGS}");
+    {ARG_GETVERSION} {ARG_ACCEPTEDARGS} \
+    {ARG_COMPLETION_ZSH}");
 
     Ok(())
 }
