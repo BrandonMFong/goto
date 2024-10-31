@@ -73,18 +73,20 @@ fn help() {
 
 /**
  * writes content for the completion file: _goto
+ *
+ * https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
  */
 fn completion_zsh() {
     println!("#compdef goto");
     println!("local -a subcmds");
-    println!("subcmds=( \
-        '{ARG_HELP}:gets help' \
-        '{ARG_GETPATH_PREV}:cd back into previous directory' \
-        '{ARG_GETKEYS}:returns all keys for the path' \
-        '{ARG_ADD}:adds key/path pair' \
-        '{ARG_REMOVE}:removes key/path pair via key' \
-        '{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \
-    )");
+    println!("subcmds=( ");
+    println!("'{ARG_HELP}:gets help' ");
+    println!("'{ARG_GETPATH_PREV}:cd back into previous directory' ");
+    println!("'{ARG_GETKEYS}:returns all keys for the path' "
+    println!("'{ARG_ADD}:adds key/path pair' \
+    println!("'{ARG_REMOVE}:removes key/path pair via key' \
+    println!("'{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \
+    println!(")");
     println!("_describe 'goto' subcmds");
 }
 
