@@ -17,7 +17,6 @@ use crate::keypath::KeyPath;
 use crate::config::Config;
 use std::fs;
 
-//static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETPATH_PREV: &'static str = "--prev";
 static ARG_GETKEYS: &'static str = "--show-keys";
 static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
@@ -39,8 +38,7 @@ fn version() -> String {
 }
 
 fn help() {
-    let args: Vec<String> = env::args().collect();
-    let tool_name = Path::new(&args[0]).file_stem().unwrap().to_str().unwrap();
+    let tool_name = "goto";
     println!("usage: {tool_name} <arg>");
     println!("arguments:");
     println!("");
