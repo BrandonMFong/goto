@@ -19,13 +19,17 @@ use std::fs;
 
 static ARG_GETPATH_PREV: &'static str = "--prev";
 static ARG_GETKEYS: &'static str = "--show-keys";
-static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
 static ARG_ADD: &'static str = "--add";
 static ARG_REMOVE: &'static str = "--remove";
 static ARG_HELP: &'static str = "--help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "--show-all";
 static ARG_GETVERSION: &'static str = "--version";
 static ARG_ACCEPTEDARGS: &'static str = "--accepted-args";
+
+/**
+ * this argument expects a parameter
+ */
+static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
 
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
@@ -37,17 +41,19 @@ fn version() -> String {
     return env!("CARGO_PKG_VERSION").to_owned();
 }
 
+/**
+ * this help is in the context of the script wrapper function: goto
+ */
 fn help() {
     let tool_name = "goto";
     println!("usage: {tool_name} <arg>");
     println!("arguments:");
     println!("");
-    //println!("{tool_name} {ARG_GETPATH} <key> = returns path for a key");
-    println!("{tool_name} {ARG_GETPATH_PREV} = returns the previous path that was queried");
+    println!("{tool_name} {ARG_GETPATH_PREV} = cd back into previous directory");
     println!("{tool_name} {ARG_GETKEYS} <path> = returns all keys for the path");
-    println!("{tool_name} {ARG_GETSUGKEYS} = returns suggested keys");
     println!("{tool_name} {ARG_ADD} <key> <path> = adds key/path pair");
     println!("{tool_name} {ARG_REMOVE} <key> = removes key/path pair via key");
+    println!("{tool_name} {ARG_SHOWALLKEYPAIRS} = shows all key pairs");
     println!("{tool_name} {ARG_HELP} = gets help");
 
     println!();
