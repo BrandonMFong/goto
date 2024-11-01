@@ -19,7 +19,7 @@ BIN_DIR = ./bin
 BIN_DIR_OUTPUT = $(BIN_DIR)/release
 PACKAGE_NAME = goto
 
-SCRIPT_NAMES = install uninstall install_utils.sh gotoutils.sh
+SCRIPT_NAMES = install uninstall install_utils.sh utils.sh env.sh
 SCRIPT_DEST = $(patsubst %, $(BIN_DIR_OUTPUT)/%, $(SCRIPT_NAMES))
 
 COMPONENT_NAMES = $(SCRIPT_NAMES) $(GOTO_TOOL_NAME)
