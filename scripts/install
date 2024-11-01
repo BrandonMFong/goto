@@ -4,7 +4,6 @@
 # date: 5/2/24
 #
 
-
 ## CONSTANTS
 
 SCRIPT_NAME=$(basename $0);
@@ -23,7 +22,7 @@ source $SCRIPT_PATH/install_utils.sh
 function help() {
 	printf "usage: $SCRIPT_NAME\n";
 	printf "\n";
-	printf "Creates a gotoutils folder in your home directory and stores all components in it\n";
+	printf "Creates a goto folder in your home directory and stores all components in it\n";
 	printf "\n";
 	printf "Copyright © 2024 Brando. All rights reserved.\n";
 }
@@ -33,13 +32,16 @@ function help() {
 #
 # returns error code
 function install() {
-	local targetpath=~/$GOTO_UTILS_DIR_NAME;
+	#local targetpath=~/$GOTO_UTILS_DIR_NAME;
+	local targetpath=$GOTO_UTILS_DATA_DIR;
 
 	# make the goto utils dir
-	mkdir $targetpath;
 	if [ ! -d $targetpath ]; then
-		printf "error: could not create $targetpath\n";
-		return 1;
+		mkdir $targetpath;
+		if [ $? -ne 0 ]; then
+			printf "error: could not create $targetpath\n";
+			return 1;
+		fi
 	fi
 
 	# copy components
@@ -54,6 +56,11 @@ function install() {
 			return 2;
 		fi
 	done
+
+	# create the completions file for zsh
+	if [ -n $ZSH_VERSION ]; then
+		goto-completion-zsh-reload;
+	fi
 
 	return 0;
 }
@@ -76,11 +83,8 @@ function main() {
 			exit $?;
 		else
 			printf "Installation complete\n";
-			if [ -n $ZSH_VERSION ]; then
-				printf "Please add \`source ~/.gotoutils/gotoutils.sh; goto_init_zsh;\` in your shell profile\n";
-			else
-				printf "Please add \`source ~/.gotoutils/gotoutils.sh; goto_init_bash;\` in your shell profile\n";
-			fi
+			printf "Please add the following to your shell profile:\n";
+			printf "\`source ~/$GOTO_UTILS_DATA_DIR_NAME/$GOTO_ENV_FILE_NAME;\`\n";
 		fi
 	fi
 

@@ -17,19 +17,33 @@ use crate::keypath::KeyPath;
 use crate::config::Config;
 use std::fs;
 
-//static ARG_GETPATH: &'static str = "getpath";
 static ARG_GETPATH_PREV: &'static str = "--prev";
 static ARG_GETKEYS: &'static str = "--show-keys";
-static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
 static ARG_ADD: &'static str = "--add";
 static ARG_REMOVE: &'static str = "--remove";
 static ARG_HELP: &'static str = "--help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "--show-all";
 static ARG_GETVERSION: &'static str = "--version";
+
+/**
+ * outputs all args in a space-delimited list
+ */
 static ARG_ACCEPTEDARGS: &'static str = "--accepted-args";
 
+/**
+ * this argument expects a parameter
+ */
+static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
+
+/**
+ * outputs the content for zsh-completions
+ *
+ * https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org#table-of-contents
+ */
+static ARG_COMPLETION_ZSH: &'static str = "--completion-zsh";
+
 static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
-static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".gotoutils";
+static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".goto";
 static GOTO_UTILS_DIRNAME_KEYPATHS: &'static str = "keypaths";
 static GOTO_UTILS_DIRNAME_HISTORY: &'static str = "history";
 static GOTO_UTILS_DIRNAME: &'static str = if cfg!(test) { GOTO_UTILS_DIRNAME_TEST } else { GOTO_UTILS_DIRNAME_RELEASE };
@@ -38,22 +52,59 @@ fn version() -> String {
     return env!("CARGO_PKG_VERSION").to_owned();
 }
 
+/**
+ * this help is in the context of the script wrapper function: goto
+ */
 fn help() {
-    let args: Vec<String> = env::args().collect();
-    let tool_name = Path::new(&args[0]).file_stem().unwrap().to_str().unwrap();
+    let tool_name = "goto";
     println!("usage: {tool_name} <arg>");
     println!("arguments:");
     println!("");
-    //println!("{tool_name} {ARG_GETPATH} <key> = returns path for a key");
-    println!("{tool_name} {ARG_GETPATH_PREV} = returns the previous path that was queried");
+    println!("{tool_name} {ARG_GETPATH_PREV} = cd back into previous directory");
     println!("{tool_name} {ARG_GETKEYS} <path> = returns all keys for the path");
-    println!("{tool_name} {ARG_GETSUGKEYS} = returns suggested keys");
     println!("{tool_name} {ARG_ADD} <key> <path> = adds key/path pair");
     println!("{tool_name} {ARG_REMOVE} <key> = removes key/path pair via key");
+    println!("{tool_name} {ARG_SHOWALLKEYPAIRS} = shows all key pairs");
     println!("{tool_name} {ARG_HELP} = gets help");
 
     println!();
     println!("version: {}, 2024", version());
+}
+
+/**
+ * writes content for the completion file: _goto
+ *
+ * https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
+ */
+fn completion_zsh() -> Result<(), i32> {
+    println!("#compdef goto");
+    println!("local -a subcmds");
+    println!("subcmds=( \\");
+
+    match Config::new(&goto_key_paths_file_path()) {
+        Err(e) => {
+            eprintln!("{}", e);
+        } Ok(conf) => {
+            for key_path_pair in conf.entries() {
+                if !key_path_pair.is_valid() {
+                    break;
+                } else {
+                    println!("'{}:{}' \\", key_path_pair.key(), key_path_pair.path());
+                }
+            }
+        }
+    }
+ 
+    println!("'{ARG_HELP}:gets help' \\");
+    println!("'{ARG_GETPATH_PREV}:cd back into previous directory' \\");
+    println!("'{ARG_GETKEYS}:returns all keys for the path' \\");
+    println!("'{ARG_ADD}:adds key/path pair' \\");
+    println!("'{ARG_REMOVE}:removes key/path pair via key' \\");
+    println!("'{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \\");
+    println!(")");
+    println!("_describe 'goto' subcmds");
+
+    Ok(())
 }
 
 fn main() {
@@ -86,6 +137,8 @@ fn run() -> Result<(), i32> {
         println!("{}", version());
     } else if args[1].eq(ARG_ACCEPTEDARGS) {
         print_all_accepted_args()?;
+    } else if args[1].eq(ARG_COMPLETION_ZSH) {
+        completion_zsh()?;
     } else {
         print_path_for_key(&args)?;
     }
@@ -98,7 +151,8 @@ fn print_all_accepted_args() -> Result<(), i32> {
     "{ARG_GETPATH_PREV} {ARG_GETKEYS} \
     {ARG_GETSUGKEYS} {ARG_ADD} {ARG_REMOVE} \
     {ARG_HELP} {ARG_SHOWALLKEYPAIRS} \
-    {ARG_GETVERSION} {ARG_ACCEPTEDARGS}");
+    {ARG_GETVERSION} {ARG_ACCEPTEDARGS} \
+    {ARG_COMPLETION_ZSH}");
 
     Ok(())
 }

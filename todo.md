@@ -1,5 +1,6 @@
 0.2
-[] auto completion for zsh
+[x] auto completion for zsh
+    - https://www.olets.dev/posts/writing-tab-completions-for-zsh-commands-can-be-straightforward/
 
 0.1
 [x] ability to goto the previous directory
