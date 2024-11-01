@@ -1,10 +1,11 @@
 #!/bin/bash
 
-
-GOTO_UTILS_DATA_DIR=~/.gotoutils
-GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/gototool
+GOTO_UTILS_DATA_DIR_NAME=.goto
+GOTO_UTILS_DATA_DIR=~/$GOTO_UTILS_DATA_DIR_NAME
+GOTO_UTILS_TOOL_NAME=gototool
+GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/$GOTO_UTILS_TOOL_NAME
 GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
-
+GOTO_COMPLETIONS_ZSH_FILE_NAME="_goto";
 
 function emulate_goto() {
 	type emulate > /dev/null 2>&1;
@@ -71,9 +72,11 @@ function goto_init_bash() {
 }
 
 function goto_init_zsh() {
-	#echo "" > /dev/null 2>&1;
 	fpath+="$GOTO_UTILS_DATA_DIR";
-	$GOTO_UTILS_TOOL --completion-zsh > $GOTO_UTILS_DATA_DIR/_goto;
+}
+
+function goto-completion-zsh-reload() {
+	$GOTO_UTILS_TOOL --completion-zsh > $GOTO_UTILS_DATA_DIR/$GOTO_COMPLETIONS_ZSH_FILE_NAME;
 }
 
 function goto_init() {
@@ -84,4 +87,3 @@ function goto_init() {
 	fi
 }
 
-goto_init;
