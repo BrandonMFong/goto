@@ -42,7 +42,7 @@ static ARG_GETSUGKEYS: &'static str = "--show-suggested-keys";
  */
 static ARG_COMPLETION_ZSH: &'static str = "--completion-zsh";
 
-static GOTO_UTILS_DIRNAME_TEST: &'static str = ".gotoutils_test";
+static GOTO_UTILS_DIRNAME_TEST: &'static str = ".goto_test";
 static GOTO_UTILS_DIRNAME_RELEASE: &'static str = ".goto";
 static GOTO_UTILS_DIRNAME_KEYPATHS: &'static str = "keypaths";
 static GOTO_UTILS_DIRNAME_HISTORY: &'static str = "history";
