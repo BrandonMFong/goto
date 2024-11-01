@@ -4,7 +4,6 @@
 # date: 5/2/24
 #
 
-
 ## CONSTANTS
 
 SCRIPT_NAME=$(basename $0);

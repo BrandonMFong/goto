@@ -13,7 +13,6 @@ ARG_HELP="help";
 ARG_HELP_V2="--help";
 ARG_HELP_V3="-h";
 
-#GOTO_UTILS_DIR_NAME=".goto";
 GOTO_UTILS_FILE_NAME="utils.sh";
 GOTO_ENV_FILE_NAME="env.sh";
 

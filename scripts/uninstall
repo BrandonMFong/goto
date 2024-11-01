@@ -22,7 +22,7 @@ source $SCRIPT_PATH/install_utils.sh
 function help() {
 	printf "usage: $SCRIPT_NAME\n";
 	printf "\n";
-	printf "Removes $GOTO_UTILS_DIR_NAME from your home directory\n";
+	printf "Removes $GOTO_UTILS_DATA_DIR from your home directory\n";
 	printf "\n";
 	printf "Copyright © 2024 Brando. All rights reserved.\n";
 }
@@ -32,13 +32,13 @@ function help() {
 #
 # returns error code
 function uninstall() {
-	rm -rfv ~/$GOTO_UTILS_DIR_NAME;
+	rm -rfv $GOTO_UTILS_DATA_DIR;
 	
 	if [ $? -ne 0 ]; then
 		printf "error: rm returned $?\n";
 		return 2;
-	elif [ -d ~/$GOTO_UTILS_DIR_NAME ]; then
-		printf "error: couldn't remove $(~/$GOTO_UTILS_DIR_NAME)\n";
+	elif [ -d $GOTO_UTILS_DATA_DIR ]; then
+		printf "error: couldn't remove $GOTO_UTILS_DATA_DIR\n";
 		return 1;
 	fi
 

@@ -4,7 +4,6 @@ GOTO_UTILS_DATA_DIR_NAME=.goto
 GOTO_UTILS_DATA_DIR=~/$GOTO_UTILS_DATA_DIR_NAME
 GOTO_UTILS_TOOL_NAME=gototool
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/$GOTO_UTILS_TOOL_NAME
-GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
 GOTO_COMPLETIONS_ZSH_FILE_NAME="_goto";
 
 function emulate_goto() {
@@ -80,6 +79,8 @@ function goto-completion-zsh-reload() {
 }
 
 function goto_init() {
+	GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
+
 	if [ -n $ZSH_VERSION ]; then
 		goto_init_zsh;
 	else
