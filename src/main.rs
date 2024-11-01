@@ -76,18 +76,35 @@ fn help() {
  *
  * https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
  */
-fn completion_zsh() {
+fn completion_zsh() -> Result<(), i32> {
     println!("#compdef goto");
     println!("local -a subcmds");
-    println!("subcmds=( ");
-    println!("'{ARG_HELP}:gets help' ");
-    println!("'{ARG_GETPATH_PREV}:cd back into previous directory' ");
-    println!("'{ARG_GETKEYS}:returns all keys for the path' "
-    println!("'{ARG_ADD}:adds key/path pair' \
-    println!("'{ARG_REMOVE}:removes key/path pair via key' \
-    println!("'{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \
+    println!("subcmds=( \\");
+
+    match Config::new(&goto_key_paths_file_path()) {
+        Err(e) => {
+            eprintln!("{}", e);
+        } Ok(conf) => {
+            for key_path_pair in conf.entries() {
+                if !key_path_pair.is_valid() {
+                    break;
+                } else {
+                    println!("{}:{}", key_path_pair.key(), key_path_pair.path());
+                }
+            }
+        }
+    }
+ 
+    println!("'{ARG_HELP}:gets help' \\");
+    println!("'{ARG_GETPATH_PREV}:cd back into previous directory' \\");
+    println!("'{ARG_GETKEYS}:returns all keys for the path' \\");
+    println!("'{ARG_ADD}:adds key/path pair' \\");
+    println!("'{ARG_REMOVE}:removes key/path pair via key' \\");
+    println!("'{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \\");
     println!(")");
     println!("_describe 'goto' subcmds");
+
+    Ok(())
 }
 
 fn main() {
@@ -121,7 +138,7 @@ fn run() -> Result<(), i32> {
     } else if args[1].eq(ARG_ACCEPTEDARGS) {
         print_all_accepted_args()?;
     } else if args[1].eq(ARG_COMPLETION_ZSH) {
-        completion_zsh();
+        completion_zsh()?;
     } else {
         print_path_for_key(&args)?;
     }
