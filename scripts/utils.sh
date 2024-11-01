@@ -6,7 +6,7 @@ GOTO_UTILS_TOOL_NAME=gototool
 GOTO_UTILS_TOOL=$GOTO_UTILS_DATA_DIR/$GOTO_UTILS_TOOL_NAME
 GOTO_COMPLETIONS_ZSH_FILE_NAME="_goto";
 
-function emulate_goto() {
+function __goto_emulate() {
 	type emulate > /dev/null 2>&1;
 	if [ $? -eq 0 ]; then
 		emulate $@;
@@ -14,8 +14,8 @@ function emulate_goto() {
 }
 
 function goto() {
-	old=$(emulate_goto);
-	emulate_goto bash;
+	old=$(__goto_emulate);
+	__goto_emulate bash;
 	cont=true;
 	p=$($GOTO_UTILS_TOOL $@);
 	error=$?;
@@ -54,7 +54,7 @@ function goto() {
 		fi
 	fi
 	
-	emulate_goto $old;
+	__goto_emulate $old;
 	return $error;
 }
 
@@ -66,11 +66,11 @@ function __goto_completion() {
 	fi
 }
 
-function goto_init_bash() {
+function goto-init-bash() {
 	complete -F __goto_completion goto
 }
 
-function goto_init_zsh() {
+function goto-init-zsh() {
 	fpath+="$GOTO_UTILS_DATA_DIR";
 }
 
@@ -78,13 +78,13 @@ function goto-completion-zsh-reload() {
 	$GOTO_UTILS_TOOL --completion-zsh > $GOTO_UTILS_DATA_DIR/$GOTO_COMPLETIONS_ZSH_FILE_NAME;
 }
 
-function goto_init() {
+function goto-init() {
 	GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
 
 	if [ -n $ZSH_VERSION ]; then
-		goto_init_zsh;
+		goto-init-zsh;
 	else
-		goto_init_bash;
+		goto-init-bash;
 	fi
 }
 
