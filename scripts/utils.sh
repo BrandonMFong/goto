@@ -81,7 +81,7 @@ function goto-completion-zsh-reload() {
 function goto-init() {
 	GOTO_UTILS_TOOL_ACCEPTED_ARGS=("$($GOTO_UTILS_TOOL --accepted-args)");
 
-	if [ -n $ZSH_VERSION ]; then
+	if [ "$ZSH_VERSION" != "" ]; then
 		goto-init-zsh;
 	else
 		goto-init-bash;
