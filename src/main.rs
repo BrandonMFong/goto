@@ -89,7 +89,7 @@ fn completion_zsh() -> Result<(), i32> {
                 if !key_path_pair.is_valid() {
                     break;
                 } else {
-                    println!("{}:{}", key_path_pair.key(), key_path_pair.path());
+                    println!("'{}:{}' \\", key_path_pair.key(), key_path_pair.path());
                 }
             }
         }
