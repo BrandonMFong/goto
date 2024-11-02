@@ -1,10 +1,16 @@
 # goto
 
-![goto-ex](docs/goto-screenshot.png)
+Simple tool to help you quickly navigate through your file system using terminal
 
 ![goto-demo](docs/goto-demo.gif)
 
-Simple tool to help you quickly navigate through your file system using terminal
+## Support
+### Operating Systems
+- macOS
+- Linux
+### Shells
+- zshell
+- bash
 
 ## Installation
 1. Download latest [archive](https://github.com/brandonmfong/goto/releases/)
