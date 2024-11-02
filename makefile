@@ -5,53 +5,76 @@
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-	BUILD_TYPE=linux
-else 
-ifeq ($(UNAME_S),Darwin)
-	BUILD_TYPE=macos
-endif
+BUILD_TYPE=linux
+PACKAGE_MODE = package-linux
+else ifeq ($(UNAME_S),Darwin)
+BUILD_TYPE=macos
+PACKAGE_MODE = package-macos
 endif
  
-GOTO_TOOL_NAME = gototool
+BIN_NAME = gototool
 SCRIPTS_PATH = ./scripts/*
-BIN_DIR = ./bin
+BIN_PATH = ./bin
 PACKAGE_NAME = goto
+PLATFORM=$(BUILD_TYPE)
 
 CONFIG=release
 ifeq ($(CONFIG), release)
-BIN_DIR_OUTPUT = $(BIN_DIR)/release
-GOTO_TOOL_BUILD_PATH = ./target/release/$(GOTO_TOOL_NAME)
+BIN_DIR = $(BIN_PATH)/release
+GOTO_TOOL_BUILD_PATH = ./target/release/$(BIN_NAME)
 BUILD_TYPE_FLAG=--release
 else ifeq ($(CONFIG), debug)
-BIN_DIR_OUTPUT = $(BIN_DIR)/debug
-GOTO_TOOL_BUILD_PATH = ./target/debug/$(GOTO_TOOL_NAME)
+BIN_DIR = $(BIN_PATH)/debug
+GOTO_TOOL_BUILD_PATH = ./target/debug/$(BIN_NAME)
 
 # default is debug
 BUILD_TYPE_FLAG=
 endif
 
 SCRIPT_NAMES = install uninstall install_utils.sh utils.sh env.sh
-SCRIPT_DEST = $(patsubst %, $(BIN_DIR_OUTPUT)/%, $(SCRIPT_NAMES))
+SCRIPT_DEST = $(patsubst %, $(BIN_DIR)/%, $(SCRIPT_NAMES))
 
-COMPONENT_NAMES = $(SCRIPT_NAMES) $(GOTO_TOOL_NAME)
+COMPONENT_NAMES = $(SCRIPT_NAMES) $(BIN_NAME)
 PACKAGE_COMPONENTS = $(patsubst %, $(PACKAGE_NAME)/%, $(COMPONENT_NAMES))
 
 .PHONY: package-setup
 
 build: setup $(SCRIPT_DEST)
-	cargo build $(BUILD_TYPE_FLAG) --target-dir $(BIN_DIR)
+	cargo build $(BUILD_TYPE_FLAG) --target-dir $(BIN_PATH)
 
-$(BIN_DIR_OUTPUT)/%: scripts/%
-	@cp -afv $< $(BIN_DIR_OUTPUT)
+help:
+	@echo "Usage:"
+	@echo "	make [target] variables"
+	@echo ""
+	@echo "Target(s):"
+	@echo "	clean			cleans build and bin folder"
+	@echo "	build 			builds release verions"
+	@echo "	package			compresses build"
+	@echo ""
+	@echo "Variable(s):"
+	@echo "	CONFIG		use this to change the build config. Accepts \"release\" (default), \"debug\", or \"test\""
+	@echo "	IDENTITY	(macos only) \"Developer ID Application\" common name"
+	@echo "	TEAMID 		(macos only) Organizational Unit"
+	@echo "	EMAIL 		(macos only) Developer account email"
+	@echo "	PW		(macos only) Developer account password"
+	@echo ""
+	@echo "Example(s):"
+	@echo "	Build for release for macOS distribution"
+	@echo "		make clean build codesign package notarize staple IDENTITY=\"\" TEAMID=\"\" EMAIL=\"\" PW=\"\""
+	@echo "	Build for release for Linux distribution"
+	@echo "		make clean build package"
 
-setup: $(BIN_DIR_OUTPUT)
-	git submodule update --init --recursive external/libs
 
-$(BIN_DIR)/%:
+$(BIN_DIR)/%: scripts/%
+	@cp -afv $< $(BIN_DIR)
+
+setup: $(BIN_DIR)
+
+$(BIN_PATH)/%:
 	mkdir -p $@
 
 clean:
-	rm -rfv $(BIN_DIR)
+	rm -rfv $(BIN_PATH)
 	rm -rfv $(PACKAGE_NAME)
 	cargo clean --verbose --color always
 
@@ -65,6 +88,33 @@ package: $(PACKAGE_NAME) build $(PACKAGE_COMPONENTS)
 $(PACKAGE_NAME):
 	mkdir -p $@
 
-$(PACKAGE_NAME)/%: $(BIN_DIR_OUTPUT)/%
+$(PACKAGE_NAME)/%: $(BIN_DIR)/%
 	@cp -afv $< $(PACKAGE_NAME)
+
+### Packaging
+
+package: $(PACKAGE_MODE)
+
+package-linux: $(PACKAGE_NAME) $(PACKAGE_NAME)/$(BIN_NAME)
+	zip -r $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).zip $(PACKAGE_NAME)
+	tar vczf $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).tar.gz $(PACKAGE_NAME)
+
+package-macos: $(PACKAGE_NAME) $(PACKAGE_NAME)/$(BIN_NAME)
+	hdiutil create -fs HFS+ -volname Chat -srcfolder $(PACKAGE_NAME) $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).dmg
+
+$(PACKAGE_NAME):
+	mkdir -p $@
+
+$(PACKAGE_NAME)/$(BIN_NAME): $(BIN_DIR)/$(BIN_NAME)
+	@cp -afv $< $(PACKAGE_NAME)
+
+codesign:
+	codesign -s "$(IDENTITY)" --options=runtime --timestamp $(BIN_DIR)/$(BIN_NAME)
+
+notarize:
+	xcrun notarytool submit --apple-id "$(EMAIL)" --password "$(PW)" --team-id "$(TEAMID)" --wait $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).dmg
+
+staple:
+	xcrun stapler staple $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).dmg
+
 
