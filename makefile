@@ -13,11 +13,22 @@ endif
 endif
  
 GOTO_TOOL_NAME = gototool
-GOTO_TOOL_BUILD_PATH = ./target/release/$(GOTO_TOOL_NAME)
 SCRIPTS_PATH = ./scripts/*
 BIN_DIR = ./bin
-BIN_DIR_OUTPUT = $(BIN_DIR)/release
 PACKAGE_NAME = goto
+
+CONFIG=release
+ifeq ($(CONFIG), release)
+BIN_DIR_OUTPUT = $(BIN_DIR)/release
+GOTO_TOOL_BUILD_PATH = ./target/release/$(GOTO_TOOL_NAME)
+BUILD_TYPE_FLAG=--release
+else ifeq ($(CONFIG), debug)
+BIN_DIR_OUTPUT = $(BIN_DIR)/debug
+GOTO_TOOL_BUILD_PATH = ./target/debug/$(GOTO_TOOL_NAME)
+
+# default is debug
+BUILD_TYPE_FLAG=
+endif
 
 SCRIPT_NAMES = install uninstall install_utils.sh utils.sh env.sh
 SCRIPT_DEST = $(patsubst %, $(BIN_DIR_OUTPUT)/%, $(SCRIPT_NAMES))
@@ -28,7 +39,7 @@ PACKAGE_COMPONENTS = $(patsubst %, $(PACKAGE_NAME)/%, $(COMPONENT_NAMES))
 .PHONY: package-setup
 
 build: setup $(SCRIPT_DEST)
-	cargo build --release --target-dir $(BIN_DIR)
+	cargo build $(BUILD_TYPE_FLAG) --target-dir $(BIN_DIR)
 
 $(BIN_DIR_OUTPUT)/%: scripts/%
 	@cp -afv $< $(BIN_DIR_OUTPUT)
