@@ -81,16 +81,6 @@ clean:
 test:
 	RUST_BACKTRACE=1 cargo test -- --test-threads=1
 
-package: $(PACKAGE_NAME) build $(PACKAGE_COMPONENTS)
-	zip -r $(BIN_DIR)/$(PACKAGE_NAME)-$(BUILD_TYPE).zip $(PACKAGE_NAME)
-	tar vczf $(BIN_DIR)/$(PACKAGE_NAME)-$(BUILD_TYPE).tar.gz $(PACKAGE_NAME)
-
-$(PACKAGE_NAME):
-	mkdir -p $@
-
-$(PACKAGE_NAME)/%: $(BIN_DIR)/%
-	@cp -afv $< $(PACKAGE_NAME)
-
 ### Packaging
 
 package: $(PACKAGE_MODE)
@@ -100,7 +90,7 @@ package-linux: $(PACKAGE_NAME) $(PACKAGE_NAME)/$(BIN_NAME)
 	tar vczf $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).tar.gz $(PACKAGE_NAME)
 
 package-macos: $(PACKAGE_NAME) $(PACKAGE_NAME)/$(BIN_NAME)
-	hdiutil create -fs HFS+ -volname Chat -srcfolder $(PACKAGE_NAME) $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).dmg
+	hdiutil create -fs HFS+ -volname Goto -srcfolder $(PACKAGE_NAME) $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).dmg
 
 $(PACKAGE_NAME):
 	mkdir -p $@
