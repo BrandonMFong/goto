@@ -2,6 +2,8 @@
 
 ![goto-ex](docs/goto-screenshot.png)
 
+![goto-demo](docs/goto-demo.gif)
+
 Simple tool to help you quickly navigate through your file system using terminal
 
 ## Installation
