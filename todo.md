@@ -2,12 +2,12 @@ x.x
 [] powershell support?
 [] research csh
 [] consider rebranding tool
+[] bug with --remove
 
 0.2
 [x] auto completion for zsh
     - https://www.olets.dev/posts/writing-tab-completions-for-zsh-commands-can-be-straightforward/
 [] make a video demo
-[] bug with --remove
 [] document zsh and bash support
 
 0.1
