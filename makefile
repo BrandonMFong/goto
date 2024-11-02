@@ -83,19 +83,19 @@ test:
 
 ### Packaging
 
-package: $(PACKAGE_MODE)
+package: $(PACKAGE_COMPONENTS) $(PACKAGE_MODE)
 
-package-linux: $(PACKAGE_NAME) $(PACKAGE_NAME)/$(BIN_NAME)
+package-linux: $(PACKAGE_NAME)
 	zip -r $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).zip $(PACKAGE_NAME)
 	tar vczf $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).tar.gz $(PACKAGE_NAME)
 
-package-macos: $(PACKAGE_NAME) $(PACKAGE_NAME)/$(BIN_NAME)
+package-macos: $(PACKAGE_NAME)
 	hdiutil create -fs HFS+ -volname Goto -srcfolder $(PACKAGE_NAME) $(BIN_DIR)/$(PACKAGE_NAME)-$(PLATFORM).dmg
 
 $(PACKAGE_NAME):
 	mkdir -p $@
 
-$(PACKAGE_NAME)/$(BIN_NAME): $(BIN_DIR)/$(BIN_NAME)
+$(PACKAGE_NAME)/%: $(BIN_DIR)/%
 	@cp -afv $< $(PACKAGE_NAME)
 
 codesign:
