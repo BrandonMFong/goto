@@ -1,3 +1,4 @@
+```
 x.x
 [] powershell support?
 [] research csh
@@ -7,8 +8,8 @@ x.x
 0.2
 [x] auto completion for zsh
     - https://www.olets.dev/posts/writing-tab-completions-for-zsh-commands-can-be-straightforward/
-[] make a video demo
-[] document zsh and bash support
+[x] make a video demo
+[x] document zsh and bash support
 
 0.1
 [x] ability to goto the previous directory
@@ -19,4 +20,4 @@ x.x
 [x] release packaging
 [x] include our lib
 [x] make packaging say platform
-
+```
