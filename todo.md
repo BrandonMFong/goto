@@ -4,6 +4,7 @@ x.x
 [] research csh
 [] consider rebranding tool
 [] bug with --remove
+[] `--add` should assume current dir
 
 0.2
 [x] auto completion for zsh
