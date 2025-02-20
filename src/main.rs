@@ -69,7 +69,7 @@ fn help() {
     println!("{tool_name} {ARG_HELP} = gets help");
 
     println!();
-    println!("version: {}, 2024", version());
+    println!("version: {}, 2025", version());
 }
 
 /**
