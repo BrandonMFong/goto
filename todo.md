@@ -4,6 +4,9 @@
 - [ ] consider rebranding tool
 - [ ] `--add` should assume current dir
 
+**0.2.2**
+- [ ] build gets quarantined on macos
+
 **0.2.1**
 - [x] bug with --remove
 
