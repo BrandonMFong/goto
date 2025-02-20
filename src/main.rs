@@ -24,8 +24,7 @@ static ARG_HELP: &'static str = "--help";
 static ARG_SHOWALLKEYPAIRS: &'static str = "--show-all";
 static ARG_GETVERSION: &'static str = "--version";
 
-// TODO: investigate bug here
-//static ARG_REMOVE: &'static str = "--remove";
+static ARG_REMOVE: &'static str = "--remove";
 
 /**
  * outputs all args in a space-delimited list
@@ -65,7 +64,7 @@ fn help() {
     println!("{tool_name} {ARG_GETPATH_PREV} = cd back into previous directory");
     println!("{tool_name} {ARG_GETKEYS} <path> = returns all keys for the path");
     println!("{tool_name} {ARG_ADD} <key> <path> = adds key/path pair");
-    //println!("{tool_name} {ARG_REMOVE} <key> = removes key/path pair via key");
+    println!("{tool_name} {ARG_REMOVE} <key> = removes key/path pair via key");
     println!("{tool_name} {ARG_SHOWALLKEYPAIRS} = shows all key pairs");
     println!("{tool_name} {ARG_HELP} = gets help");
 
@@ -101,7 +100,7 @@ fn completion_zsh() -> Result<(), i32> {
     println!("'{ARG_GETPATH_PREV}:cd back into previous directory' \\");
     println!("'{ARG_GETKEYS}:returns all keys for the path' \\");
     println!("'{ARG_ADD}:adds key/path pair' \\");
-    //println!("'{ARG_REMOVE}:removes key/path pair via key' \\");
+    println!("'{ARG_REMOVE}:removes key/path pair via key' \\");
     println!("'{ARG_SHOWALLKEYPAIRS}:shows all key pairs' \\");
     println!(")");
     println!("_describe 'goto' subcmds");
@@ -129,8 +128,8 @@ fn run() -> Result<(), i32> {
         print_keys_for_path(&args)?;
     } else if args[1].eq(ARG_GETSUGKEYS) {
         print_suggested_keys(&args)?;
-//    } else if args[1].eq(ARG_REMOVE) {
- //       remove_key_path(&args)?;
+    } else if args[1].eq(ARG_REMOVE) {
+        remove_key_path(&args)?;
     } else if args[1].eq(ARG_SHOWALLKEYPAIRS) {
         print_all_key_pairs()?;
     } else if args[1].eq(ARG_GETPATH_PREV) {
@@ -154,8 +153,8 @@ fn print_all_accepted_args() -> Result<(), i32> {
     {ARG_GETSUGKEYS} {ARG_ADD} \
     {ARG_HELP} {ARG_SHOWALLKEYPAIRS} \
     {ARG_GETVERSION} {ARG_ACCEPTEDARGS} \
-    {ARG_COMPLETION_ZSH}");
-    //{ARG_REMOVE} \
+    {ARG_COMPLETION_ZSH} \
+    {ARG_REMOVE}");
 
     Ok(())
 }

@@ -51,7 +51,7 @@ impl Config {
      */
     pub fn enter_keypath(&self, kp: KeyPath) -> Result<(), &str> {
         // Write new key and path pair
-        let file_writer = Config::create_writer(&self._path);
+        let file_writer = Self::create_writer(&self._path);
         if file_writer.is_err() {
             return Err(file_writer.err().unwrap());
         }
@@ -122,7 +122,7 @@ impl Config {
      * creates a writer for path
      */
     fn create_writer(path: &str) -> Result<File, &str> {
-        match OpenOptions::new().create(true).write(true).append(true).open(&path) {
+        match OpenOptions::new().create(true).read(true).write(true).append(true).open(&path) {
             Err(_) => {
                 Err("couldn't open for writing")
             } Ok(res) => {
